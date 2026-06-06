@@ -132,23 +132,21 @@ const QuotationCompare = () => {
               </tr>
 
               {/* Action Row */}
-              {user.role === 'Procurement Officer' && (
-                <tr>
-                  <td className="p-4 border-r border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30"></td>
-                  {quotations.map(quote => (
-                    <td key={quote._id} className={`p-4 text-center ${quote.totalAmount === lowestTotal ? 'bg-green-50/30 dark:bg-green-900/10' : ''}`}>
-                      {rfq.status !== 'Approved' && rfq.status !== 'Closed' && (
-                        <button 
-                          onClick={() => handleSelectWinner(quote._id)}
-                          className={`px-4 py-2 rounded-xl font-medium w-full flex items-center justify-center transition-colors ${quote.totalAmount === lowestTotal ? 'bg-green-600 hover:bg-green-700 text-white shadow-md' : 'bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-300'}`}
-                        >
-                          <CheckCircle className="h-4 w-4 mr-2" /> Select Vendor
-                        </button>
-                      )}
-                    </td>
-                  ))}
-                </tr>
-              )}
+              <tr>
+                <td className="p-4 border-r border-slate-200 bg-slate-50/50"></td>
+                {quotations.map(quote => (
+                  <td key={quote._id} className={`p-4 text-center ${quote.totalAmount === lowestTotal ? 'bg-green-50/30' : ''}`}>
+                    {rfq.status !== 'Approved' && rfq.status !== 'Closed' && (
+                      <button 
+                        onClick={() => handleSelectWinner(quote._id)}
+                        className={`px-4 py-2 rounded-lg font-medium w-full flex items-center justify-center transition-colors ${quote.totalAmount === lowestTotal ? 'bg-green-600 hover:bg-green-700 text-white shadow-md' : 'bg-slate-200 hover:bg-slate-300 text-slate-700'}`}
+                      >
+                        <CheckCircle className="h-4 w-4 mr-2" /> Select Vendor
+                      </button>
+                    )}
+                  </td>
+                ))}
+              </tr>
             </tbody>
           </table>
         </div>

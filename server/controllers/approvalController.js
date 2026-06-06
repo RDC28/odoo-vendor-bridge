@@ -66,6 +66,36 @@ exports.decideApproval = async (req, res) => {
     if (status === 'Approved') {
       await Quotation.findByIdAndUpdate(approval.quotation._id, { status: 'Selected' });
       await RFQ.findByIdAndUpdate(approval.rfq._id, { status: 'Approved' });
+      
+      const PurchaseOrder = require('../models/PurchaseOrder');
+      const Invoice = require('../models/Invoice');
+      
+      const subtotal = approval.quotation.totalAmount;
+      const taxAmount = Math.round(subtotal * 0.18);
+      const totalAmount = subtotal + taxAmount;
+      
+      const po = await PurchaseOrder.create({
+        rfq: approval.rfq._id,
+        quotation: approval.quotation._id,
+        vendor: approval.quotation.vendor,
+        createdBy: req.user._id,
+        items: approval.quotation.items,
+        subtotal,
+        taxAmount,
+        totalAmount,
+        deliveryDays: approval.quotation.deliveryDays,
+        notes: approval.quotation.notes,
+      });
+
+      await Invoice.create({
+        purchaseOrder: po._id,
+        vendor: po.vendor,
+        createdBy: req.user._id,
+        subtotal,
+        taxAmount,
+        totalAmount,
+        status: 'Draft',
+      });
     } else {
       await Quotation.findByIdAndUpdate(approval.quotation._id, { status: 'Rejected' });
     }

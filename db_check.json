@@ -1,0 +1,159 @@
+{
+  "approvals": [
+    {
+      "_id": "6a23a74e733ece6f8b973993",
+      "rfq": "6a23a74e733ece6f8b973968",
+      "quotation": "6a23a74e733ece6f8b973983",
+      "requestedBy": "6a23a74e733ece6f8b97395f",
+      "approver": "6a23a74e733ece6f8b973960",
+      "status": "Approved",
+      "remarks": "Best price and certified partner. Approved.",
+      "decidedAt": "2026-06-03T04:51:26.881Z",
+      "createdAt": "2026-06-06T04:51:26.882Z",
+      "updatedAt": "2026-06-06T04:51:26.882Z",
+      "__v": 0
+    },
+    {
+      "_id": "6a23d403d325887386209bd3",
+      "rfq": "6a23d1b7d3258873862093ae",
+      "quotation": "6a23d1e0d3258873862094b4",
+      "requestedBy": "6a23b5c8dc4583cd5f5814d4",
+      "approver": "6a23b55bdc4583cd5f581348",
+      "status": "Approved",
+      "createdAt": "2026-06-06T08:02:11.647Z",
+      "updatedAt": "2026-06-06T08:09:45.575Z",
+      "__v": 0,
+      "decidedAt": "2026-06-06T08:09:45.574Z",
+      "remarks": ""
+    }
+  ],
+  "pos": [
+    {
+      "_id": "6a23a74e733ece6f8b973995",
+      "poNumber": "PO-2026-0001",
+      "rfq": "6a23a74e733ece6f8b973968",
+      "quotation": "6a23a74e733ece6f8b973983",
+      "vendor": "6a23a74e733ece6f8b973957",
+      "createdBy": "6a23a74e733ece6f8b97395f",
+      "items": [
+        {
+          "name": "Managed Switch 24-Port",
+          "quantity": 10,
+          "unit": "Nos",
+          "unitPrice": 11000,
+          "totalPrice": 110000,
+          "_id": "6a23a74e733ece6f8b973984"
+        },
+        {
+          "name": "Router Enterprise",
+          "quantity": 5,
+          "unit": "Nos",
+          "unitPrice": 23000,
+          "totalPrice": 115000,
+          "_id": "6a23a74e733ece6f8b973985"
+        },
+        {
+          "name": "CAT6 Cable (305m)",
+          "quantity": 20,
+          "unit": "Box",
+          "unitPrice": 4000,
+          "totalPrice": 80000,
+          "_id": "6a23a74e733ece6f8b973986"
+        }
+      ],
+      "subtotal": 305000,
+      "taxRate": 18,
+      "taxAmount": 54900,
+      "totalAmount": 359900,
+      "status": "Confirmed",
+      "deliveryDays": 7,
+      "createdAt": "2026-06-06T04:51:26.889Z",
+      "updatedAt": "2026-06-06T04:51:26.889Z",
+      "__v": 0
+    },
+    {
+      "_id": "6a23a74e733ece6f8b97399a",
+      "poNumber": "PO-2026-0002",
+      "rfq": "6a23a74e733ece6f8b97396d",
+      "quotation": "6a23a74e733ece6f8b97398d",
+      "vendor": "6a23a74e733ece6f8b97395a",
+      "createdBy": "6a23a74e733ece6f8b97395f",
+      "items": [
+        {
+          "name": "A4 Copy Paper (500 sheets)",
+          "quantity": 20,
+          "unit": "Ream",
+          "unitPrice": 420,
+          "totalPrice": 8400,
+          "_id": "6a23a74e733ece6f8b97398e"
+        },
+        {
+          "name": "Ballpoint Pens (Blue)",
+          "quantity": 10,
+          "unit": "Box",
+          "unitPrice": 180,
+          "totalPrice": 1800,
+          "_id": "6a23a74e733ece6f8b97398f"
+        },
+        {
+          "name": "Document Folders",
+          "quantity": 50,
+          "unit": "Nos",
+          "unitPrice": 65,
+          "totalPrice": 3250,
+          "_id": "6a23a74e733ece6f8b973990"
+        },
+        {
+          "name": "Whiteboard Markers",
+          "quantity": 5,
+          "unit": "Pack",
+          "unitPrice": 340,
+          "totalPrice": 1700,
+          "_id": "6a23a74e733ece6f8b973991"
+        }
+      ],
+      "subtotal": 15150,
+      "taxRate": 18,
+      "taxAmount": 2727,
+      "totalAmount": 17877,
+      "status": "Paid",
+      "deliveryDays": 5,
+      "createdAt": "2026-06-06T04:51:26.897Z",
+      "updatedAt": "2026-06-06T04:51:26.897Z",
+      "__v": 0
+    }
+  ],
+  "invoices": [
+    {
+      "_id": "6a23a74e733ece6f8b9739a0",
+      "invoiceNumber": "INV-2026-0001",
+      "purchaseOrder": "6a23a74e733ece6f8b97399a",
+      "vendor": "6a23a74e733ece6f8b97395a",
+      "createdBy": "6a23a74e733ece6f8b97395f",
+      "subtotal": 15150,
+      "taxAmount": 2727,
+      "totalAmount": 17877,
+      "status": "Paid",
+      "paidAt": "2026-06-04T04:51:26.900Z",
+      "createdAt": "2026-06-06T04:51:26.901Z",
+      "updatedAt": "2026-06-06T04:51:26.901Z",
+      "dueDate": "2026-07-06T04:51:26.902Z",
+      "__v": 0
+    },
+    {
+      "_id": "6a23a74e733ece6f8b9739a2",
+      "invoiceNumber": "INV-2026-0002",
+      "purchaseOrder": "6a23a74e733ece6f8b973995",
+      "vendor": "6a23a74e733ece6f8b973957",
+      "createdBy": "6a23a74e733ece6f8b97395f",
+      "subtotal": 305000,
+      "taxAmount": 54900,
+      "totalAmount": 359900,
+      "status": "Draft",
+      "createdAt": "2026-06-06T04:51:26.905Z",
+      "updatedAt": "2026-06-06T04:51:26.905Z",
+      "dueDate": "2026-07-06T04:51:26.905Z",
+      "__v": 0
+    }
+  ]
+}
