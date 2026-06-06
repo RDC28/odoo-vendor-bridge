@@ -83,17 +83,17 @@ const ApprovalDetail = () => {
           <div>
             <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4 flex items-center"><FileText className="w-4 h-4 mr-2" /> Original Request</h3>
             <div className="bg-slate-50 p-5 rounded-lg border border-slate-100">
-              <div className="font-bold text-lg text-slate-800 mb-1">{approval.quotation?.rfq?.title || 'Unknown RFQ'}</div>
-              <div className="text-sm text-slate-600 mb-4">Category: {approval.quotation?.rfq?.category}</div>
+              <div className="font-bold text-lg text-slate-800 mb-1">{approval.rfq?.title || 'Unknown RFQ'}</div>
+              <div className="text-sm text-slate-600 mb-4">Category: {approval.rfq?.category}</div>
               
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="text-slate-500">Requested Items:</span>
-                  <span className="font-medium text-slate-800">{approval.quotation?.rfq?.items?.length || 0} items</span>
+                  <span className="font-medium text-slate-800">{approval.rfq?.items?.length || 0} items</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-slate-500">Procurement Officer:</span>
-                  <span className="font-medium text-slate-800">{approval.quotation?.rfq?.createdBy?.name || 'Unknown'}</span>
+                  <span className="font-medium text-slate-800">{approval.rfq?.createdBy?.name || 'Unknown'}</span>
                 </div>
               </div>
             </div>
