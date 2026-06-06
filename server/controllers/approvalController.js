@@ -1,6 +1,8 @@
 const Approval = require('../models/Approval');
 const Quotation = require('../models/Quotation');
 const RFQ = require('../models/RFQ');
+const PurchaseOrder = require('../models/PurchaseOrder');
+const Invoice = require('../models/Invoice');
 const { log } = require('../utils/logger');
 const { notify } = require('../utils/notify');
 
@@ -66,36 +68,43 @@ exports.decideApproval = async (req, res) => {
     if (status === 'Approved') {
       await Quotation.findByIdAndUpdate(approval.quotation._id, { status: 'Selected' });
       await RFQ.findByIdAndUpdate(approval.rfq._id, { status: 'Approved' });
-      
-      const PurchaseOrder = require('../models/PurchaseOrder');
-      const Invoice = require('../models/Invoice');
-      
-      const subtotal = approval.quotation.totalAmount;
+      const quotation = approval.quotation;
+      const subtotal = quotation.totalAmount;
       const taxAmount = Math.round(subtotal * 0.18);
       const totalAmount = subtotal + taxAmount;
-      
+
       const po = await PurchaseOrder.create({
         rfq: approval.rfq._id,
-        quotation: approval.quotation._id,
-        vendor: approval.quotation.vendor,
+        quotation: quotation._id,
+        vendor: quotation.vendor,
         createdBy: req.user._id,
-        items: approval.quotation.items,
+        items: quotation.items,
         subtotal,
         taxAmount,
         totalAmount,
-        deliveryDays: approval.quotation.deliveryDays,
-        notes: approval.quotation.notes,
+        deliveryDays: quotation.deliveryDays,
+        notes: quotation.notes,
       });
 
-      await Invoice.create({
+      const invoice = await Invoice.create({
         purchaseOrder: po._id,
         vendor: po.vendor,
         createdBy: req.user._id,
-        subtotal,
-        taxAmount,
-        totalAmount,
+        subtotal: po.subtotal,
+        taxAmount: po.taxAmount,
+        totalAmount: po.totalAmount,
         status: 'Draft',
       });
+
+      const vendorUserId = await require('../models/User').findOne({ vendorId: quotation.vendor });
+      if (vendorUserId) {
+        await notify({
+          userId: vendorUserId._id,
+          title: 'New PO & Invoice',
+          message: `Purchase Order ${po.poNumber} and Invoice ${invoice.invoiceNumber} generated.`,
+          link: '/purchase-orders'
+        });
+      }
     } else {
       await Quotation.findByIdAndUpdate(approval.quotation._id, { status: 'Rejected' });
     }
