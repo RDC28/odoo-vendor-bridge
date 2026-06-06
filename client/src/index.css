@@ -4,8 +4,7 @@
 
 @layer base {
   body {
-    @apply bg-slate-50 text-slate-800 antialiased;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    @apply bg-slate-50 text-slate-800 antialiased dark:bg-slate-950 dark:text-slate-100;
   }
 }
 
@@ -27,8 +26,5 @@
 
 /* Glassmorphism utility */
 .glass {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  @apply bg-white/70 dark:bg-slate-900/70 backdrop-blur-md border border-white/30 dark:border-slate-800/50;
 }

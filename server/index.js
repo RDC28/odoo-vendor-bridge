@@ -22,6 +22,7 @@ app.use('/api/purchase-orders', require('./routes/purchaseOrders'));
 app.use('/api/invoices', require('./routes/invoices'));
 app.use('/api/activity-logs', require('./routes/activityLogs'));
 app.use('/api/reports', require('./routes/reports'));
+app.use('/api/notifications', require('./routes/notifications'));
 
 // Health check
 app.get('/api/health', (req, res) => res.json({ status: 'ok', time: new Date() }));
