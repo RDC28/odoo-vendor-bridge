@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 import { useAuth } from '../hooks/useAuth';
-import { Download, Mail, Eye } from 'lucide-react';
+import { Download, Mail, Eye, Printer } from 'lucide-react';
 import { format } from 'date-fns';
 
 const Invoices = () => {
@@ -37,6 +37,19 @@ const Invoices = () => {
       link.parentNode.removeChild(link);
     } catch (err) {
       alert('Failed to download PDF');
+    }
+  };
+
+  const handlePrint = async (id, invoiceNumber) => {
+    try {
+      const res = await api.get(`/invoices/${id}/pdf`, { responseType: 'blob' });
+      const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
+      const printWindow = window.open(url);
+      printWindow.onload = () => {
+        printWindow.print();
+      };
+    } catch (err) {
+      alert('Failed to print PDF');
     }
   };
 
@@ -112,6 +125,9 @@ const Invoices = () => {
                       <button onClick={() => handleDownload(inv._id, inv.invoiceNumber)} className="text-slate-600 dark:text-slate-400 hover:text-green-600 dark:hover:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30 px-2 py-1.5 rounded-md transition-colors inline-flex items-center text-xs" title="Download PDF">
                         <Download className="h-4 w-4" />
                       </button>
+                      <button onClick={() => handlePrint(inv._id, inv.invoiceNumber)} className="text-slate-600 dark:text-slate-400 hover:text-green-600 dark:hover:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30 px-2 py-1.5 rounded-md transition-colors inline-flex items-center text-xs" title="Print Invoice">
+                        <Printer className="h-4 w-4" />
+                      </button>
                       {user.role !== 'Vendor' && inv.status !== 'Paid' && (
                         <button onClick={() => handleEmail(inv._id)} className="text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 px-2 py-1.5 rounded-md transition-colors inline-flex items-center text-xs" title="Email to Vendor">
                           <Mail className="h-4 w-4" />
@@ -179,6 +195,12 @@ const Invoices = () => {
               </div>
             </div>
             <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 flex justify-end space-x-3">
+              <button 
+                onClick={() => handlePrint(selectedInvoice._id, selectedInvoice.invoiceNumber)}
+                className="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-xl font-medium transition-colors inline-flex items-center shadow-sm"
+              >
+                <Printer className="w-4 h-4 mr-2" /> Print
+              </button>
               <button 
                 onClick={() => handleDownload(selectedInvoice._id, selectedInvoice.invoiceNumber)}
                 className="px-4 py-2 bg-green-600 text-white hover:bg-green-700 rounded-xl font-medium transition-colors inline-flex items-center shadow-sm"
