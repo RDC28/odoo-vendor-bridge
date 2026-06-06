@@ -1,103 +1,256 @@
-# VendorBridge: Full-Stack Enterprise Procurement ERP
+# VendorBridge
 
-VendorBridge is a comprehensive, full-stack Enterprise Resource Planning (ERP) application designed specifically to streamline and automate corporate procurement. It handles everything from Request for Quotation (RFQ) creation to automated Purchase Order and Invoice generation.
+VendorBridge is a full-stack procurement workflow application for managing vendor onboarding, RFQs, quotations, approvals, purchase orders, invoices, reports, notifications, and activity logs.
 
-## 🌟 Key Features
+The app is organized as a React/Vite client and an Express/MongoDB API. It is built around a role-based procurement cycle: internal users create and send RFQs, vendors submit quotations, managers approve selected bids, and the system generates purchase orders and draft invoices.
 
-*   **Role-Based Access Control (RBAC):** Distinct workflows for Admins, Procurement Officers, Managers, and external Vendors.
-*   **RFQ Management:** Multi-step wizard to create and publish RFQs, with automated category-based vendor assignment.
-*   **Quotation Sourcing & Comparison:** Vendors can easily submit quotes. Officers get a side-by-side comparison table to easily identify the most cost-effective bids.
-*   **Approval Workflows:** Multi-stage approval processes requiring managerial sign-off before financial commitment.
-*   **Automated Document Generation:** Instant, automatic creation of Purchase Orders (POs) and Invoices upon managerial approval.
-*   **PDF Exports & Emailing:** Generate clean PDF documents and email them directly to vendors.
-*   **Activity Logging:** Complete audit trails tracking every system action.
+## Features
 
----
+- Role-based access for Admin, Procurement Officer, Manager, and Vendor users.
+- JWT authentication with protected routes on both the client and API.
+- Vendor registration and vendor master data management.
+- RFQ creation, vendor assignment, sending, status tracking, and vendor-filtered RFQ views.
+- Vendor quotation submission with duplicate-submission protection per RFQ/vendor pair.
+- Quotation comparison sorted by total amount with lowest item-price highlights.
+- Approval requests for selected quotations.
+- Manager approval/rejection workflow.
+- Automatic purchase order and draft invoice creation after approval.
+- Invoice PDF download and optional invoice email delivery.
+- Dashboard metrics, spend reports, top vendor reports, monthly trend charts, notifications, and activity logs.
 
-## 🛠️ Tech Stack
+## Tech Stack
 
-*   **Frontend:** React, Vite, TailwindCSS, React Router, Lucide Icons.
-*   **Backend:** Node.js, Express.js.
-*   **Database:** MongoDB & Mongoose.
-*   **Authentication:** JSON Web Tokens (JWT).
-*   **Document Processing:** PDFKit, Nodemailer.
+- Frontend: React, Vite, React Router, Tailwind CSS, Recharts, Lucide React, Axios.
+- Backend: Node.js, Express, Mongoose, JWT, bcrypt.
+- Database: MongoDB.
+- Documents and email: PDFKit and Nodemailer.
+- Tooling: npm, concurrently, nodemon, ESLint.
 
----
+## Project Structure
 
-## 🚀 Getting Started
+```text
+.
++-- client/                 # React/Vite frontend
+|   +-- src/
+|   |   +-- components/     # Layout, sidebar, topbar, route guards
+|   |   +-- context/        # Auth and theme state
+|   |   +-- pages/          # Dashboard and workflow screens
+|   |   +-- services/api.js # Axios API client
+|   +-- package.json
++-- server/                 # Express API
+|   +-- controllers/        # Route handlers and business workflow logic
+|   +-- middleware/         # JWT auth and role authorization
+|   +-- models/             # Mongoose schemas
+|   +-- routes/             # REST route definitions
+|   +-- utils/              # Seed data, logging, notifications, PDF, email
+|   +-- package.json
++-- package.json            # Root scripts for install, dev, and seed
++-- README.md
+```
 
-Follow these steps to run the project locally on your machine.
+## Prerequisites
 
-### Prerequisites
-*   [Node.js](https://nodejs.org/en) installed.
-*   [MongoDB](https://www.mongodb.com/try/download/community) installed and running locally on port `27017`.
+- Node.js 18 or newer.
+- npm.
+- MongoDB running locally, or a MongoDB Atlas connection string.
 
-### 1. Backend Setup
-1. Open a terminal and navigate to the backend directory:
-   ```bash
-   cd server
-   ```
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Set up environment variables:
-   Ensure your `server/.env` file exists and contains your MongoDB URI and JWT secret.
-4. Start the backend server (we highly recommend running `npm run dev` to auto-reload on file changes):
-   ```bash
-   npm run dev
-   ```
+The client currently calls the API at `http://localhost:5000/api` from `client/src/services/api.js`, so the backend should run on port `5000` unless you update that file.
 
-### 2. Frontend Setup
-1. Open a second terminal and navigate to the frontend directory:
-   ```bash
-   cd client
-   ```
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Start the frontend development server:
-   ```bash
-   npm run dev
-   ```
-4. Open your browser and navigate to the URL provided in the terminal (usually `http://localhost:5173`).
+## Environment Variables
 
----
+Create `server/.env` before running the API:
 
-## 🎭 Default Roles & Workflow Testing
+```env
+PORT=5000
+MONGO_URI=mongodb://127.0.0.1:27017/vendorbridge
+JWT_SECRET=replace-with-a-long-random-secret
+JWT_EXPIRES_IN=7d
 
-To properly test the full functionality of the application, follow this end-to-end procurement cycle:
+# Optional, required only for invoice email sending
+SMTP_HOST=smtp.example.com
+SMTP_PORT=587
+SMTP_USER=your-smtp-user
+SMTP_PASS=your-smtp-password
+```
 
-### Step 1: Registration (Vendor/Admin)
-*   **Vendors** can self-register using the "Register as Vendor" link on the login page.
-*   An **Admin** user can be created to manage internal users (Procurement Officers and Managers) through the Users dashboard.
+Notes:
 
-### Step 2: Create an RFQ (Procurement Officer)
-*   Log in as a **Procurement Officer**.
-*   Navigate to **RFQs** and click "Create New RFQ".
-*   Add items and select a category. The system will automatically assign matching active vendors.
+- `MONGO_URI` and `JWT_SECRET` are required for normal login and API usage.
+- `JWT_EXPIRES_IN` is recommended; for example `7d`, `24h`, or `30d`.
+- SMTP variables are only needed for the invoice email action. PDF download does not require SMTP.
 
-### Step 3: Submit a Quote (Vendor)
-*   Log out and log in as one of the assigned **Vendors**.
-*   Navigate to **Quotations**, find the open RFQ, and submit your pricing and delivery details.
+## Quick Start
 
-### Step 4: Compare & Select (Procurement Officer)
-*   Log back in as the **Procurement Officer**.
-*   Go to **Quotations** and click "Compare Quotes" on the RFQ.
-*   Review the side-by-side bids and click **Select Vendor** on the winning bid. This automatically triggers an Approval Request.
+Install all root, server, and client dependencies:
 
-### Step 5: Approve & Generate (Manager)
-*   Log out and log in as a **Manager**.
-*   Navigate to the **Approvals** tab and review the Officer's request.
-*   Click **Approve & Generate PO**. 
-*   **Magic:** The system will immediately update the RFQ status, generate a binding **Purchase Order**, and draft an **Invoice**!
+```bash
+npm run install:all
+```
 
-### Step 6: Documentation (Anyone)
-*   Navigate to the **Purchase Orders** and **Invoices** tabs to view the auto-generated documents.
-*   Download PDFs or trigger automated emails.
+Seed the database with demo users and procurement data:
 
----
+```bash
+npm run seed
+```
 
-## 📄 License
-This project is open-source and created for evaluation and demonstration purposes.
+Start the API and frontend together from the repository root:
+
+```bash
+npm run dev
+```
+
+Open the Vite app at:
+
+```text
+http://localhost:5173
+```
+
+The API health endpoint is:
+
+```text
+http://localhost:5000/api/health
+```
+
+## Running Apps Separately
+
+Backend:
+
+```bash
+cd server
+npm install
+npm run dev
+```
+
+Frontend:
+
+```bash
+cd client
+npm install
+npm run dev
+```
+
+## Available Scripts
+
+From the repository root:
+
+```bash
+npm run install:all  # install root, server, and client dependencies
+npm run dev          # run server and client with concurrently
+npm run server       # run only the Express API
+npm run client       # run only the Vite client
+npm run seed         # reset and seed MongoDB demo data
+```
+
+From `client/`:
+
+```bash
+npm run dev
+npm run build
+npm run lint
+npm run preview
+```
+
+From `server/`:
+
+```bash
+npm run dev
+npm start
+npm run seed
+```
+
+## Demo Accounts
+
+After running `npm run seed`, all seeded users use this password:
+
+```text
+password123
+```
+
+| Role | Email |
+| --- | --- |
+| Admin | `admin@vendorbridge.com` |
+| Procurement Officer | `arjun@vendorbridge.com` |
+| Procurement Officer | `neha@vendorbridge.com` |
+| Manager | `priya@vendorbridge.com` |
+| Vendor - TechCore Ltd | `ravi@vendorbridge.com` |
+| Vendor - Infra Supplies | `deepak@vendorbridge.com` |
+| Vendor - CloudNet Systems | `sanjay@vendorbridge.com` |
+| Vendor - BuildRight Materials | `rohan@vendorbridge.com` |
+
+Important: `npm run seed` deletes existing users, vendors, RFQs, quotations, approvals, purchase orders, invoices, and activity logs before inserting demo data.
+
+## Roles and Access
+
+| Role | Main capabilities |
+| --- | --- |
+| Admin | Manage users, vendors, RFQs, quotation comparison, approvals, POs, invoices, reports, and activity logs. |
+| Procurement Officer | Manage vendors, create/send RFQs, compare quotations, request approvals, and manage procurement documents. |
+| Manager | Review approvals, approve or reject quotation selections, and view reports. |
+| Vendor | View assigned RFQs, submit quotations, and view their own purchase orders and invoices. |
+
+## Procurement Workflow
+
+1. Admin or Procurement Officer creates an RFQ with category, deadline, assigned vendors, and line items.
+2. The RFQ is sent to assigned vendors, changing its status to `Sent` and creating vendor notifications.
+3. A vendor submits a quotation. The API calculates the total amount and moves the RFQ to `Under Review`.
+4. An internal user compares quotations for the RFQ and requests approval for the selected quotation.
+5. A Manager approves or rejects the approval request.
+6. If approved, the selected quotation becomes `Selected`, the RFQ becomes `Approved`, and the API automatically creates a purchase order plus a draft invoice using 18% GST.
+7. Internal users can manage invoices, download invoice PDFs, and email invoices when SMTP settings are configured.
+
+## API Overview
+
+All endpoints except registration, login, and health checks require a JWT bearer token.
+
+| Area | Base path | Notes |
+| --- | --- | --- |
+| Auth | `/api/auth` | Register, login, current user, admin-only user listing. |
+| Vendors | `/api/vendors` | Vendor list, search, create, update, delete. |
+| RFQs | `/api/rfqs` | RFQ list/detail/create/update/send. Vendor users only see assigned RFQs. |
+| Quotations | `/api/quotations` | Quotation list/detail/create/update and RFQ comparison. |
+| Approvals | `/api/approvals` | Approval list, request approval, manager/admin decision. |
+| Purchase Orders | `/api/purchase-orders` | PO list/detail/create/update. Vendors see their own POs. |
+| Invoices | `/api/invoices` | Invoice list/detail/create/update, PDF download, email sending. |
+| Reports | `/api/reports` | Summary, spend by category, top vendors, monthly trend. |
+| Activity Logs | `/api/activity-logs` | Audit trail. |
+| Notifications | `/api/notifications` | User notifications and read state. |
+
+## Data Model Summary
+
+- `User`: login identity, role, active flag, optional linked vendor profile.
+- `Vendor`: supplier profile, GST number, category, country, active/inactive status.
+- `RFQ`: procurement request, category, status, assigned vendors, and line items.
+- `Quotation`: vendor bid for an RFQ with item prices, total amount, delivery days, and status.
+- `Approval`: manager decision record for a selected quotation.
+- `PurchaseOrder`: generated procurement document based on an approved quotation.
+- `Invoice`: generated invoice tied to a purchase order.
+- `Notification`: in-app notification for workflow events.
+- `ActivityLog`: audit record for important actions.
+
+## Verification
+
+Useful checks during development:
+
+```bash
+cd client
+npm run lint
+npm run build
+```
+
+The server does not currently define automated tests or a lint script. For API smoke testing, start the backend and call:
+
+```text
+GET http://localhost:5000/api/health
+```
+
+## Troubleshooting
+
+- MongoDB connection errors usually mean `MONGO_URI` is missing, incorrect, or MongoDB is not running.
+- Login/token errors usually mean `JWT_SECRET` is missing or the database has not been seeded.
+- Client API errors usually mean the backend is not running on `http://localhost:5000`.
+- Invoice email failures usually mean SMTP variables are missing or invalid. The API returns an email-specific error for that action.
+- If seeded demo data is missing, rerun `npm run seed`; this resets the demo database collections.
+
+## License
+
+This project is open-source and intended for evaluation, demonstration, and hackathon-style development.
