@@ -3,6 +3,7 @@ const PurchaseOrder = require('../models/PurchaseOrder');
 const { generateInvoicePDF } = require('../utils/pdfGenerator');
 const { sendInvoiceEmail } = require('../utils/emailSender');
 const { log } = require('../utils/logger');
+const { notify } = require('../utils/notify');
 
 exports.getInvoices = async (req, res) => {
   try {
@@ -51,7 +52,14 @@ exports.createInvoice = async (req, res) => {
       status: 'Draft',
     });
 
-    await log({ user: req.user, action: 'CREATE', entityType: 'Invoice', entityId: invoice._id, description: `${req.user.name} generated invoice ${invoice.invoiceNumber} from ${po.poNumber}` });
+    await log({ user: req.user, action: 'CREATE', entityType: 'Invoice', entityId: invoice._id, description: `${req.user.name} generated invoice ${invoice.invoiceNumber}` });
+
+    await notify({
+      roles: ['Admin', 'Procurement Officer'],
+      title: 'New Invoice Submitted',
+      message: `Invoice ${invoice.invoiceNumber} has been submitted by vendor.`,
+      link: '/invoices'
+    });
 
     res.status(201).json(invoice);
   } catch (err) {
@@ -98,6 +106,19 @@ exports.updateInvoice = async (req, res) => {
     if (updates.status === 'Paid') updates.paidAt = new Date();
     const invoice = await Invoice.findByIdAndUpdate(req.params.id, updates, { new: true });
     if (!invoice) return res.status(404).json({ message: 'Invoice not found' });
+
+    if (updates.status) {
+      const vendorUserId = await require('../models/User').findOne({ vendorId: invoice.vendor });
+      if (vendorUserId) {
+        await notify({
+          userId: vendorUserId._id,
+          title: `Invoice ${updates.status}`,
+          message: `Your invoice ${invoice.invoiceNumber} has been marked as ${updates.status}.`,
+          link: '/invoices'
+        });
+      }
+    }
+
     res.json(invoice);
   } catch (err) {
     res.status(400).json({ message: err.message });

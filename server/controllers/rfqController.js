@@ -1,5 +1,6 @@
 const RFQ = require('../models/RFQ');
 const { log } = require('../utils/logger');
+const { notify } = require('../utils/notify');
 
 exports.getRFQs = async (req, res) => {
   try {
@@ -64,6 +65,15 @@ exports.sendRFQ = async (req, res) => {
     ).populate('assignedVendors', 'name email');
     if (!rfq) return res.status(404).json({ message: 'RFQ not found' });
     await log({ user: req.user, action: 'SEND', entityType: 'RFQ', entityId: rfq._id, description: `${req.user.name} sent RFQ "${rfq.title}" to ${rfq.assignedVendors.length} vendors` });
+    
+    // Notify vendors
+    await notify({
+      userIds: rfq.assignedVendors.map(v => v._id),
+      title: 'New RFQ Received',
+      message: `You have received a new Request for Quotation: "${rfq.title}". Deadline: ${new Date(rfq.deadline).toLocaleDateString()}`,
+      link: '/rfqs'
+    });
+
     res.json({ message: 'RFQ sent to vendors', rfq });
   } catch (err) {
     res.status(500).json({ message: err.message });

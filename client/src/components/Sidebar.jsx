@@ -20,8 +20,8 @@ const Sidebar = () => {
   ];
 
   return (
-    <div className="w-64 bg-slate-900 text-slate-300 flex flex-col h-screen fixed top-0 left-0">
-      <div className="h-16 flex items-center px-6 border-b border-slate-800 shrink-0 bg-slate-900">
+    <div className="w-64 bg-slate-950/95 backdrop-blur-xl text-slate-300 flex flex-col h-screen fixed top-0 left-0 border-r border-slate-800/60 shadow-2xl z-40 transition-all duration-300">
+      <div className="h-16 flex items-center px-6 border-b border-slate-800/60 shrink-0 bg-transparent">
         <h1 className="text-xl font-bold text-white tracking-wide">
           <span className="text-green-500">Vendor</span>Bridge
         </h1>
@@ -40,10 +40,10 @@ const Sidebar = () => {
                   key={item.path}
                   to={item.path}
                   className={({ isActive }) =>
-                    `flex items-center px-4 py-2.5 text-sm font-medium rounded-lg transition-colors ${
+                    `flex items-center px-4 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 ${
                       isActive
-                        ? 'bg-green-600/10 text-green-400'
-                        : 'hover:bg-slate-800 hover:text-white'
+                        ? 'bg-gradient-to-r from-green-500/20 to-green-500/5 text-green-400 border-l-4 border-green-500 shadow-inner'
+                        : 'hover:bg-slate-800/50 hover:text-white border-l-4 border-transparent'
                     }`
                   }
                 >

@@ -1,6 +1,7 @@
 const Quotation = require('../models/Quotation');
 const RFQ = require('../models/RFQ');
 const { log } = require('../utils/logger');
+const { notify } = require('../utils/notify');
 
 exports.getQuotations = async (req, res) => {
   try {
@@ -59,7 +60,13 @@ exports.createQuotation = async (req, res) => {
     });
 
     if (q.status !== 'Draft') {
-      await RFQ.findByIdAndUpdate(rfqId, { status: 'Under Review' });
+      const rfq = await RFQ.findByIdAndUpdate(rfqId, { status: 'Under Review' });
+      await notify({
+        roles: ['Admin', 'Procurement Officer'],
+        title: 'New Quotation Submitted',
+        message: `A new quotation has been submitted by ${req.user.name} for RFQ "${rfq.title}".`,
+        link: '/quotations'
+      });
     }
     await log({ user: req.user, action: 'SUBMIT', entityType: 'Quotation', entityId: q._id, description: `${req.user.name} ${q.status === 'Draft' ? 'saved a draft' : 'submitted'} quotation for RFQ` });
 

@@ -1,6 +1,7 @@
 const PurchaseOrder = require('../models/PurchaseOrder');
 const Quotation = require('../models/Quotation');
 const { log } = require('../utils/logger');
+const { notify } = require('../utils/notify');
 
 exports.getPurchaseOrders = async (req, res) => {
   try {
@@ -54,7 +55,17 @@ exports.createPurchaseOrder = async (req, res) => {
       notes: quotation.notes,
     });
 
-    await log({ user: req.user, action: 'CREATE', entityType: 'PurchaseOrder', entityId: po._id, description: `${req.user.name} generated ${po.poNumber} for ${quotation.vendor.name}` });
+    await log({ user: req.user, action: 'CREATE', entityType: 'PurchaseOrder', entityId: po._id, description: `${req.user.name} created PO ${po.poNumber}` });
+
+    const vendorUserId = await require('../models/User').findOne({ vendorId: quotation.vendor._id });
+    if (vendorUserId) {
+      await notify({
+        userId: vendorUserId._id,
+        title: 'New Purchase Order',
+        message: `A new Purchase Order (${po.poNumber}) has been issued to you.`,
+        link: '/purchase-orders'
+      });
+    }
 
     res.status(201).json(po);
   } catch (err) {

@@ -36,22 +36,27 @@ async function seed() {
       { name: 'FurniCo', email: 'furnico@example.com', phone: '+91 97531 86420', gstNumber: '06AAFCF3456R3Z9', category: 'Furniture', country: 'India', status: 'Active' },
       { name: 'StatioMart', email: 'statio@example.com', phone: '+91 96320 75310', gstNumber: '24AAACS7654S4B2', category: 'Office Supplies', country: 'India', status: 'Active' },
       { name: 'FormsLog', email: 'forms@example.com', phone: '+91 95100 64200', gstNumber: '19AABCF4567T5C3', category: 'IT & Software', country: 'India', status: 'Active' },
+      { name: 'CloudNet Systems', email: 'cloudnet@example.com', phone: '+91 94100 55500', gstNumber: '07AABCF5555T1A1', category: 'IT & Software', country: 'India', status: 'Active' },
+      { name: 'BuildRight Materials', email: 'buildright@example.com', phone: '+91 93100 44400', gstNumber: '05AABCF4444T2B2', category: 'Infrastructure', country: 'India', status: 'Active' },
     ]);
     console.log(`✅ Created ${vendors.length} vendors`);
 
     // Create users (password: password123 for all)
     const hashedPassword = await bcrypt.hash('password123', 12);
     const users = await User.insertMany([
-      { name: 'Sneha Admin', email: 'admin@vendorbridge.com', password: hashedPassword, role: 'Admin' },
+      { name: 'Admin', email: 'admin@vendorbridge.com', password: hashedPassword, role: 'Admin' },
       { name: 'Arjun Kumar', email: 'arjun@vendorbridge.com', password: hashedPassword, role: 'Procurement Officer' },
       { name: 'Priya Manager', email: 'priya@vendorbridge.com', password: hashedPassword, role: 'Manager' },
       { name: 'Ravi Vendor', email: 'ravi@vendorbridge.com', password: hashedPassword, role: 'Vendor', vendorId: vendors[0]._id },
       { name: 'Deepak Vendor', email: 'deepak@vendorbridge.com', password: hashedPassword, role: 'Vendor', vendorId: vendors[1]._id },
+      { name: 'Neha Officer', email: 'neha@vendorbridge.com', password: hashedPassword, role: 'Procurement Officer' },
+      { name: 'Sanjay Vendor', email: 'sanjay@vendorbridge.com', password: hashedPassword, role: 'Vendor', vendorId: vendors[5]._id },
+      { name: 'Rohan Vendor', email: 'rohan@vendorbridge.com', password: hashedPassword, role: 'Vendor', vendorId: vendors[6]._id },
     ]);
     console.log(`✅ Created ${users.length} users`);
 
-    const [admin, officer, manager, vendorUser1, vendorUser2] = users;
-    const [techcore, infra, furnico, statio, formslog] = vendors;
+    const [admin, officer, manager, vendorUser1, vendorUser2, officer2, vendorUser3, vendorUser4] = users;
+    const [techcore, infra, furnico, statio, formslog, cloudnet, buildright] = vendors;
 
     // RFQ 1: Office Furniture (Sent - with quotations)
     const rfq1 = await RFQ.create({
@@ -101,7 +106,37 @@ async function seed() {
       ],
     });
 
-    console.log(`✅ Created 3 RFQs`);
+    // RFQ 4: Cloud Hosting Services
+    const rfq4 = await RFQ.create({
+      title: 'Cloud Hosting Services 2025',
+      description: 'Annual contract for cloud hosting infrastructure, load balancers, and CDN.',
+      category: 'IT & Software',
+      deadline: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
+      status: 'Sent',
+      createdBy: officer2._id,
+      assignedVendors: [techcore._id, formslog._id, cloudnet._id],
+      items: [
+        { name: 'Compute Instances (Annual)', quantity: 20, unit: 'Nos', estimatedPrice: 150000 },
+        { name: 'Managed Database', quantity: 2, unit: 'Nos', estimatedPrice: 200000 },
+      ],
+    });
+
+    // RFQ 5: Building Materials for Warehouse
+    const rfq5 = await RFQ.create({
+      title: 'Building Materials for Warehouse',
+      description: 'Cement, steel, and roofing for the new warehouse expansion.',
+      category: 'Infrastructure',
+      deadline: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000), // deadline passed
+      status: 'Closed',
+      createdBy: officer._id,
+      assignedVendors: [infra._id, buildright._id],
+      items: [
+        { name: 'Portland Cement', quantity: 500, unit: 'Bags', estimatedPrice: 350 },
+        { name: 'TMT Steel Bars', quantity: 10, unit: 'Tons', estimatedPrice: 60000 },
+      ],
+    });
+
+    console.log(`✅ Created 5 RFQs`);
 
     // Quotations for RFQ 1 (Office Furniture)
     const q1_furnico = await Quotation.create({
@@ -173,6 +208,26 @@ async function seed() {
       totalAmount: 15150, deliveryDays: 5, notes: 'Ready stock. Same-week delivery.', status: 'Submitted',
     });
 
+    // Quotations for RFQ 4
+    const q4_cloudnet = await Quotation.create({
+      rfq: rfq4._id, vendor: cloudnet._id, submittedBy: vendorUser3._id,
+      items: [
+        { name: 'Compute Instances (Annual)', quantity: 20, unit: 'Nos', unitPrice: 145000, totalPrice: 2900000 },
+        { name: 'Managed Database', quantity: 2, unit: 'Nos', unitPrice: 190000, totalPrice: 380000 },
+      ],
+      totalAmount: 3280000, deliveryDays: 2, notes: 'Enterprise SLAs included.', status: 'Submitted',
+    });
+
+    // Quotations for RFQ 5
+    const q5_buildright = await Quotation.create({
+      rfq: rfq5._id, vendor: buildright._id, submittedBy: vendorUser4._id,
+      items: [
+        { name: 'Portland Cement', quantity: 500, unit: 'Bags', unitPrice: 340, totalPrice: 170000 },
+        { name: 'TMT Steel Bars', quantity: 10, unit: 'Tons', unitPrice: 58000, totalPrice: 580000 },
+      ],
+      totalAmount: 750000, deliveryDays: 10, notes: 'Includes transport.', status: 'Selected',
+    });
+
     console.log(`✅ Created quotations`);
 
     // Approval for RFQ 2 — Approved
@@ -180,6 +235,12 @@ async function seed() {
       rfq: rfq2._id, quotation: q2_techcore._id, requestedBy: officer._id,
       approver: manager._id, status: 'Approved', remarks: 'Best price and certified partner. Approved.',
       decidedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+    });
+
+    const approval2 = await Approval.create({
+      rfq: rfq5._id, quotation: q5_buildright._id, requestedBy: officer._id,
+      approver: manager._id, status: 'Approved', remarks: 'Good pricing for bulk.',
+      decidedAt: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000),
     });
 
     console.log(`✅ Created approvals`);
@@ -202,6 +263,14 @@ async function seed() {
       status: 'Paid', deliveryDays: 5,
     });
 
+    const po3 = await PurchaseOrder.create({
+      poNumber: `PO-${new Date().getFullYear()}-0003`,
+      rfq: rfq5._id, quotation: q5_buildright._id, vendor: buildright._id, createdBy: officer._id,
+      items: q5_buildright.items,
+      subtotal: 750000, taxAmount: 135000, totalAmount: 885000,
+      status: 'Confirmed', deliveryDays: 10,
+    });
+
     console.log(`✅ Created purchase orders`);
 
     // Invoice for PO2 (Paid)
@@ -220,6 +289,13 @@ async function seed() {
       status: 'Draft',
     });
 
+    const inv3 = await Invoice.create({
+      invoiceNumber: `INV-${new Date().getFullYear()}-0003`,
+      purchaseOrder: po3._id, vendor: buildright._id, createdBy: officer._id,
+      subtotal: 750000, taxAmount: 135000, totalAmount: 885000,
+      status: 'Paid', paidAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
+    });
+
     console.log(`✅ Created invoices`);
 
     // Activity logs
@@ -233,8 +309,10 @@ async function seed() {
       { user: manager._id, userName: 'Priya Manager', action: 'APPROVED', entityType: 'Approval', entityId: approval1._id, description: 'Priya Manager approved quotation for RFQ: Network Equipment', createdAt: new Date(now - 3 * 24 * 60 * 60 * 1000) },
       { user: officer._id, userName: 'Arjun Kumar', action: 'CREATE', entityType: 'PurchaseOrder', entityId: po1._id, description: `Arjun Kumar generated ${po1.poNumber} for TechCore Ltd`, createdAt: new Date(now - 3 * 24 * 60 * 60 * 1000 + 3600000) },
       { user: officer._id, userName: 'Arjun Kumar', action: 'CREATE', entityType: 'Invoice', entityId: inv1._id, description: `Arjun Kumar generated invoice ${inv1.invoiceNumber} from ${po2.poNumber}`, createdAt: new Date(now - 2 * 24 * 60 * 60 * 1000) },
-      { user: admin._id, userName: 'Sneha Admin', action: 'CREATE', entityType: 'Vendor', entityId: formslog._id, description: 'Sneha Admin registered new vendor: FormsLog', createdAt: new Date(now - 1 * 24 * 60 * 60 * 1000) },
+      { user: admin._id, userName: 'Admin', action: 'CREATE', entityType: 'Vendor', entityId: formslog._id, description: 'Admin registered new vendor: FormsLog', createdAt: new Date(now - 1 * 24 * 60 * 60 * 1000) },
       { user: manager._id, userName: 'Priya Manager', action: 'REJECTED', entityType: 'Approval', entityId: approval1._id, description: 'Priya Manager rejected quotation from FormsLog — "Price exceeds budget by 18%"', createdAt: new Date(now - 12 * 60 * 60 * 1000) },
+      { user: officer2._id, userName: 'Neha Officer', action: 'CREATE', entityType: 'RFQ', entityId: rfq4._id, description: 'Neha Officer created RFQ: Cloud Hosting Services 2025', createdAt: new Date(now - 4 * 24 * 60 * 60 * 1000) },
+      { user: vendorUser3._id, userName: 'Sanjay Vendor', action: 'SUBMIT', entityType: 'Quotation', entityId: q4_cloudnet._id, description: 'Sanjay Vendor submitted quotation for Cloud Hosting', createdAt: new Date(now - 2 * 24 * 60 * 60 * 1000) },
     ]);
 
     console.log(`✅ Created activity logs`);
@@ -242,9 +320,12 @@ async function seed() {
     console.log('\n📋 Login credentials (password: password123 for all):');
     console.log('   Admin:    admin@vendorbridge.com');
     console.log('   Officer:  arjun@vendorbridge.com');
+    console.log('   Officer2: neha@vendorbridge.com');
     console.log('   Manager:  priya@vendorbridge.com');
-    console.log('   Vendor:   ravi@vendorbridge.com');
+    console.log('   Vendor1:  ravi@vendorbridge.com');
     console.log('   Vendor2:  deepak@vendorbridge.com');
+    console.log('   Vendor3:  sanjay@vendorbridge.com');
+    console.log('   Vendor4:  rohan@vendorbridge.com');
 
     process.exit(0);
   } catch (err) {

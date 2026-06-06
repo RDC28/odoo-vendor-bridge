@@ -2,6 +2,7 @@ const Approval = require('../models/Approval');
 const Quotation = require('../models/Quotation');
 const RFQ = require('../models/RFQ');
 const { log } = require('../utils/logger');
+const { notify } = require('../utils/notify');
 
 exports.getApprovals = async (req, res) => {
   try {
@@ -34,6 +35,13 @@ exports.createApproval = async (req, res) => {
 
     await Quotation.findByIdAndUpdate(quotationId, { status: 'Under Review' });
     await log({ user: req.user, action: 'REQUEST_APPROVAL', entityType: 'Approval', entityId: approval._id, description: `${req.user.name} requested approval for quotation` });
+
+    await notify({
+      roles: ['Manager'],
+      title: 'Approval Required',
+      message: `${req.user.name} has requested manager approval for a vendor quotation.`,
+      link: '/approvals'
+    });
 
     res.status(201).json(approval);
   } catch (err) {
@@ -68,6 +76,13 @@ exports.decideApproval = async (req, res) => {
       entityType: 'Approval',
       entityId: approval._id,
       description: `${req.user.name} ${status.toLowerCase()} approval for RFQ: ${approval.rfq.title}${remarks ? ` — "${remarks}"` : ''}`,
+    });
+
+    await notify({
+      userId: approval.requestedBy,
+      title: `Approval ${status}`,
+      message: `Your approval request for RFQ "${approval.rfq.title}" has been ${status.toLowerCase()} by ${req.user.name}.`,
+      link: '/approvals'
     });
 
     res.json(approval);
