@@ -1,0 +1,870 @@
+
+<h2 class="sr-only">VendorBridge — Procurement & Vendor Management ERP with role-based dashboard, vendor management, RFQ workflow, quotation comparison, approval workflow, purchase orders, invoices, activity logs, and reports.</h2>
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --green:#16a34a;--green-light:#f0fdf4;--green-dark:#15803d;
+    --red:#dc2626;--amber:#d97706;--blue:#2563eb;
+    --gray-50:#f9fafb;--gray-100:#f3f4f6;--gray-200:#e5e7eb;
+    --gray-300:#d1d5db;--gray-400:#9ca3af;--gray-600:#4b5563;
+    --gray-700:#374151;--gray-800:#1f2937;--gray-900:#111827;
+  }
+  #vb{font-family:'IBM Plex Sans',sans-serif;display:flex;height:600px;overflow:hidden;background:var(--gray-50);font-size:13px;color:var(--gray-900)}
+  .sidebar{width:210px;min-width:210px;background:white;border-right:1px solid var(--gray-200);display:flex;flex-direction:column;overflow:hidden}
+  .sb-logo{padding:16px 16px 12px;border-bottom:1px solid var(--gray-200)}
+  .sb-logo-mark{display:flex;align-items:center;gap:8px}
+  .sb-logo-icon{width:28px;height:28px;background:var(--green);border-radius:6px;display:flex;align-items:center;justify-content:center;color:white;font-size:14px}
+  .sb-brand{font-weight:600;font-size:14px;color:var(--gray-900)}
+  .sb-brand span{color:var(--green)}
+  .sb-role-pill{margin-top:6px;font-size:10px;padding:2px 8px;border-radius:20px;background:var(--green-light);color:var(--green-dark);font-weight:500;display:inline-block}
+  .sb-nav{flex:1;overflow-y:auto;padding:8px 0}
+  .sb-section{font-size:10px;font-weight:600;color:var(--gray-400);padding:8px 16px 4px;text-transform:uppercase;letter-spacing:.05em}
+  .sb-item{display:flex;align-items:center;gap:8px;padding:7px 16px;cursor:pointer;border-radius:0;color:var(--gray-600);font-size:12px;transition:background .1s;border-left:2px solid transparent}
+  .sb-item:hover{background:var(--gray-50);color:var(--gray-900)}
+  .sb-item.active{background:var(--green-light);color:var(--green-dark);font-weight:500;border-left-color:var(--green)}
+  .sb-item i{font-size:15px;width:16px}
+  .sb-badge{margin-left:auto;background:var(--amber);color:white;font-size:9px;padding:1px 5px;border-radius:20px;font-weight:600}
+  .sb-user{padding:12px 16px;border-top:1px solid var(--gray-200);display:flex;align-items:center;gap:8px}
+  .sb-avatar{width:28px;height:28px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0}
+  .sb-user-info{flex:1;min-width:0}
+  .sb-user-name{font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .sb-user-role{font-size:10px;color:var(--gray-400)}
+  .main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+  .topbar{height:48px;background:white;border-bottom:1px solid var(--gray-200);display:flex;align-items:center;padding:0 20px;gap:12px;flex-shrink:0}
+  .topbar-title{font-size:14px;font-weight:600;flex:1}
+  .topbar-search{display:flex;align-items:center;gap:6px;background:var(--gray-100);border-radius:6px;padding:5px 10px;font-size:12px;color:var(--gray-400);cursor:pointer}
+  .topbar-search i{font-size:14px}
+  .topbar-bell{position:relative;cursor:pointer;color:var(--gray-600)}
+  .topbar-bell i{font-size:18px}
+  .notif-dot{position:absolute;top:-2px;right:-2px;width:7px;height:7px;background:var(--red);border-radius:50%;border:1.5px solid white}
+  .content{flex:1;overflow-y:auto;padding:20px}
+  .screen{display:none}.screen.active{display:block}
+
+  /* Dashboard */
+  .stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+  .stat-card{background:white;border:1px solid var(--gray-200);border-radius:10px;padding:14px 16px}
+  .stat-label{font-size:11px;color:var(--gray-400);font-weight:500;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+  .stat-label i{font-size:14px}
+  .stat-val{font-size:22px;font-weight:600;font-family:'IBM Plex Mono',monospace;color:var(--gray-900)}
+  .stat-delta{font-size:11px;margin-top:3px}
+  .stat-delta.up{color:var(--green)}.stat-delta.down{color:var(--red)}
+  .dash-grid{display:grid;grid-template-columns:1fr 300px;gap:16px}
+  .card{background:white;border:1px solid var(--gray-200);border-radius:10px;padding:16px}
+  .card-title{font-size:12px;font-weight:600;color:var(--gray-700);margin-bottom:12px;display:flex;align-items:center;gap:6px}
+  .card-title i{font-size:14px;color:var(--green)}
+  .activity-item{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--gray-100)}
+  .activity-item:last-child{border-bottom:none}
+  .a-dot{width:7px;height:7px;border-radius:50%;margin-top:4px;flex-shrink:0}
+  .a-dot.green{background:var(--green)}.a-dot.amber{background:var(--amber)}.a-dot.blue{background:var(--blue)}.a-dot.red{background:var(--red)}
+  .a-text{font-size:12px;color:var(--gray-700);line-height:1.4}
+  .a-time{font-size:10px;color:var(--gray-400);margin-top:2px}
+  .quick-actions{display:flex;flex-direction:column;gap:8px}
+  .qa-btn{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:8px;border:1px solid var(--gray-200);cursor:pointer;font-size:12px;font-weight:500;color:var(--gray-700);background:white;transition:all .15s}
+  .qa-btn:hover{background:var(--green-light);border-color:var(--green);color:var(--green-dark)}
+  .qa-btn i{font-size:15px}
+
+  /* Tables */
+  .tbl-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;font-size:12px}
+  th{background:var(--gray-50);padding:8px 12px;text-align:left;font-size:11px;font-weight:600;color:var(--gray-500);border-bottom:1px solid var(--gray-200);white-space:nowrap}
+  td{padding:9px 12px;border-bottom:1px solid var(--gray-100);color:var(--gray-700);vertical-align:middle}
+  tr:hover td{background:var(--gray-50)}
+  .badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600}
+  .badge-green{background:#dcfce7;color:#15803d}
+  .badge-amber{background:#fef3c7;color:#92400e}
+  .badge-red{background:#fee2e2;color:#991b1b}
+  .badge-blue{background:#dbeafe;color:#1d4ed8}
+  .badge-gray{background:var(--gray-100);color:var(--gray-600)}
+  .act-btn{display:inline-flex;align-items:center;gap:4px;padding:4px 8px;border-radius:5px;border:1px solid var(--gray-200);cursor:pointer;font-size:11px;color:var(--gray-600);background:white}
+  .act-btn:hover{background:var(--gray-100)}
+  .act-btn.green{border-color:var(--green);color:var(--green)}
+  .act-btn.red{border-color:var(--red);color:var(--red)}
+
+  /* Forms & Modals */
+  .page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+  .page-title{font-size:16px;font-weight:600}
+  .page-subtitle{font-size:12px;color:var(--gray-400);margin-top:2px}
+  .btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;border:1px solid}
+  .btn-primary{background:var(--green);color:white;border-color:var(--green)}.btn-primary:hover{background:var(--green-dark)}
+  .btn-secondary{background:white;color:var(--gray-700);border-color:var(--gray-200)}.btn-secondary:hover{background:var(--gray-50)}
+  .btn-danger{background:var(--red);color:white;border-color:var(--red)}
+  .toolbar{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+  .search-input{display:flex;align-items:center;gap:6px;background:white;border:1px solid var(--gray-200);border-radius:7px;padding:6px 10px;font-size:12px;color:var(--gray-600);flex:1;max-width:260px}
+  .search-input i{font-size:14px;color:var(--gray-400)}
+  .filter-select{background:white;border:1px solid var(--gray-200);border-radius:7px;padding:6px 10px;font-size:12px;color:var(--gray-700);cursor:pointer}
+  
+  /* Modal overlay */
+  .modal-bg{position:absolute;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:100;display:none}
+  .modal-bg.open{display:flex}
+  .modal{background:white;border-radius:12px;width:480px;max-height:520px;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.15)}
+  .modal-head{padding:16px 20px;border-bottom:1px solid var(--gray-200);display:flex;align-items:center;justify-content:space-between}
+  .modal-head h3{font-size:14px;font-weight:600}
+  .modal-close{cursor:pointer;color:var(--gray-400);font-size:18px}
+  .modal-close:hover{color:var(--gray-700)}
+  .modal-body{padding:20px}
+  .form-row{margin-bottom:14px}
+  .form-label{font-size:11px;font-weight:600;color:var(--gray-600);margin-bottom:4px;display:block;text-transform:uppercase;letter-spacing:.04em}
+  .form-input{width:100%;padding:7px 10px;border:1px solid var(--gray-200);border-radius:7px;font-size:12px;font-family:inherit;color:var(--gray-900)}
+  .form-input:focus{outline:none;border-color:var(--green)}
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .modal-foot{padding:12px 20px;border-top:1px solid var(--gray-200);display:flex;gap:8px;justify-content:flex-end}
+
+  /* Steps */
+  .steps{display:flex;align-items:center;gap:0;margin-bottom:20px}
+  .step{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:500}
+  .step-num{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600}
+  .step.done .step-num{background:var(--green);color:white}
+  .step.active .step-num{background:var(--gray-900);color:white}
+  .step.todo .step-num{background:var(--gray-200);color:var(--gray-500)}
+  .step.done .step-label,.step.active .step-label{color:var(--gray-800)}
+  .step.todo .step-label{color:var(--gray-400)}
+  .step-line{flex:1;height:1px;background:var(--gray-200);margin:0 8px}
+  .step-line.done{background:var(--green)}
+
+  /* Comparison table */
+  .compare-table th{background:var(--gray-50)}
+  .compare-table .winner{background:#dcfce7!important;color:#15803d;font-weight:600}
+  .compare-table td.best{background:#f0fdf4}
+
+  /* Timeline */
+  .timeline{display:flex;align-items:center;gap:0;margin-bottom:20px}
+  .tl-step{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1}
+  .tl-dot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;border:2px solid}
+  .tl-dot.done{background:var(--green);border-color:var(--green);color:white}
+  .tl-dot.active{background:white;border-color:var(--green);color:var(--green)}
+  .tl-dot.todo{background:var(--gray-100);border-color:var(--gray-300);color:var(--gray-400)}
+  .tl-label{font-size:10px;color:var(--gray-500);text-align:center}
+  .tl-line{flex:1;height:2px;margin-bottom:20px}
+  .tl-line.done{background:var(--green)}.tl-line.todo{background:var(--gray-200)}
+
+  /* Reports */
+  .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
+  .kpi{background:white;border:1px solid var(--gray-200);border-radius:8px;padding:12px 14px}
+  .kpi-label{font-size:10px;color:var(--gray-400);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px}
+  .kpi-val{font-size:18px;font-weight:600;font-family:'IBM Plex Mono',monospace;color:var(--gray-900)}
+  .kpi-sub{font-size:10px;color:var(--green);margin-top:2px}
+  .reports-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+
+  /* Invoice / PO */
+  .po-doc{background:white;border:1px solid var(--gray-200);border-radius:10px;padding:20px;max-width:600px}
+  .po-header{display:flex;justify-content:space-between;margin-bottom:20px;padding-bottom:16px;border-bottom:2px solid var(--green)}
+  .po-brand{font-size:18px;font-weight:700;color:var(--green)}
+  .po-brand span{color:var(--gray-800)}
+  .po-meta{text-align:right;font-size:11px;color:var(--gray-500)}
+  .po-meta strong{color:var(--gray-900);font-size:12px}
+  .po-parties{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+  .po-party-label{font-size:10px;font-weight:600;color:var(--gray-400);text-transform:uppercase;margin-bottom:4px}
+  .po-party-name{font-size:13px;font-weight:600;color:var(--gray-900)}
+  .po-party-info{font-size:11px;color:var(--gray-500);margin-top:2px;line-height:1.5}
+  .po-totals{margin-left:auto;width:220px;margin-top:12px}
+  .po-total-row{display:flex;justify-content:space-between;padding:4px 0;font-size:12px;color:var(--gray-700)}
+  .po-total-row.grand{border-top:2px solid var(--gray-200);font-size:14px;font-weight:700;color:var(--gray-900);padding-top:8px;margin-top:4px}
+
+  /* Login */
+  .login-wrap{min-height:600px;display:flex;align-items:center;justify-content:center;background:var(--gray-50)}
+  .login-card{background:white;border-radius:14px;border:1px solid var(--gray-200);padding:36px;width:360px}
+  .login-logo{display:flex;align-items:center;gap:10px;margin-bottom:28px}
+  .login-logo-icon{width:36px;height:36px;background:var(--green);border-radius:9px;display:flex;align-items:center;justify-content:center;color:white;font-size:18px}
+  .login-brand{font-size:20px;font-weight:700}
+  .login-brand span{color:var(--green)}
+  .login-sub{font-size:12px;color:var(--gray-400);margin-top:2px}
+  .login-form .form-row{margin-bottom:14px}
+  .role-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px}
+  .role-opt{border:1px solid var(--gray-200);border-radius:7px;padding:7px 10px;cursor:pointer;font-size:11px;font-weight:500;color:var(--gray-600);text-align:center;transition:all .15s}
+  .role-opt:hover{border-color:var(--green);color:var(--green)}
+  .role-opt.selected{border-color:var(--green);background:var(--green-light);color:var(--green-dark)}
+</style>
+
+<div id="vb">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sb-logo">
+      <div class="sb-logo-mark">
+        <div class="sb-logo-icon"><i class="ti ti-building-store" aria-hidden="true"></i></div>
+        <div class="sb-brand">Vendor<span>Bridge</span></div>
+      </div>
+      <div class="sb-role-pill" id="role-pill">Procurement Officer</div>
+    </div>
+    <div class="sb-nav">
+      <div class="sb-section">Main</div>
+      <div class="sb-item active" onclick="nav('dashboard')"><i class="ti ti-layout-dashboard" aria-hidden="true"></i>Dashboard</div>
+      <div class="sb-item" onclick="nav('vendors')"><i class="ti ti-building" aria-hidden="true"></i>Vendors</div>
+      <div class="sb-item" onclick="nav('rfqs')"><i class="ti ti-file-description" aria-hidden="true"></i>RFQs</div>
+      <div class="sb-item" onclick="nav('quotations')"><i class="ti ti-receipt" aria-hidden="true"></i>Quotations</div>
+      <div class="sb-item" onclick="nav('compare')"><i class="ti ti-arrows-right-left" aria-hidden="true"></i>Compare Quotes</div>
+      <div class="sb-section">Procurement</div>
+      <div class="sb-item" onclick="nav('approvals')"><i class="ti ti-circle-check" aria-hidden="true"></i>Approvals<span class="sb-badge">3</span></div>
+      <div class="sb-item" onclick="nav('pos')"><i class="ti ti-file-invoice" aria-hidden="true"></i>Purchase Orders</div>
+      <div class="sb-item" onclick="nav('invoices')"><i class="ti ti-cash" aria-hidden="true"></i>Invoices</div>
+      <div class="sb-section">Insights</div>
+      <div class="sb-item" onclick="nav('reports')"><i class="ti ti-chart-bar" aria-hidden="true"></i>Reports</div>
+      <div class="sb-item" onclick="nav('logs')"><i class="ti ti-list-details" aria-hidden="true"></i>Activity Logs</div>
+      <div class="sb-section">System</div>
+      <div class="sb-item" onclick="nav('login')"><i class="ti ti-user-circle" aria-hidden="true"></i>Switch Role</div>
+    </div>
+    <div class="sb-user">
+      <div class="sb-avatar" id="user-avatar">AK</div>
+      <div class="sb-user-info">
+        <div class="sb-user-name" id="user-name">Arjun Kumar</div>
+        <div class="sb-user-role" id="user-role">Procurement Officer</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-title" id="topbar-title">Dashboard</div>
+      <div class="topbar-search"><i class="ti ti-search" aria-hidden="true"></i>Search…</div>
+      <div class="topbar-bell" aria-label="Notifications">
+        <i class="ti ti-bell" aria-hidden="true"></i>
+        <div class="notif-dot"></div>
+      </div>
+    </div>
+    <div class="content">
+
+      <!-- LOGIN SCREEN -->
+      <div class="screen" id="screen-login">
+        <div class="login-wrap" style="min-height:520px">
+          <div class="login-card">
+            <div class="login-logo">
+              <div class="login-logo-icon"><i class="ti ti-building-store" aria-hidden="true"></i></div>
+              <div>
+                <div class="login-brand">Vendor<span>Bridge</span></div>
+                <div class="login-sub">Procurement ERP</div>
+              </div>
+            </div>
+            <div class="login-form">
+              <div class="form-row">
+                <label class="form-label">Email</label>
+                <input class="form-input" type="email" value="arjun@company.com" />
+              </div>
+              <div class="form-row">
+                <label class="form-label">Password</label>
+                <input class="form-input" type="password" value="••••••••" />
+              </div>
+              <div class="form-row">
+                <label class="form-label">Sign in as</label>
+                <div class="role-grid">
+                  <div class="role-opt" onclick="selectRole('Admin','SA','Sneha Admin')">Admin</div>
+                  <div class="role-opt selected" onclick="selectRole('Procurement Officer','AK','Arjun Kumar')">Officer</div>
+                  <div class="role-opt" onclick="selectRole('Manager','PM','Priya Manager')">Manager</div>
+                  <div class="role-opt" onclick="selectRole('Vendor','TC','TechCore Ltd')">Vendor</div>
+                </div>
+              </div>
+              <button class="btn btn-primary" style="width:100%;margin-top:6px;justify-content:center" onclick="nav('dashboard')">
+                <i class="ti ti-login" aria-hidden="true"></i>Sign In
+              </button>
+              <div style="text-align:center;margin-top:12px;font-size:11px;color:var(--gray-400)">
+                <a style="color:var(--green);cursor:pointer">Forgot password?</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DASHBOARD -->
+      <div class="screen active" id="screen-dashboard">
+        <div class="page-header">
+          <div>
+            <div class="page-title" id="dash-welcome">Welcome back, Arjun 👋</div>
+            <div class="page-subtitle">Here's what's happening in procurement today</div>
+          </div>
+        </div>
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="stat-label"><i class="ti ti-file-description" aria-hidden="true"></i>Active RFQs</div>
+            <div class="stat-val">12</div>
+            <div class="stat-delta up">↑ 3 this week</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label"><i class="ti ti-clock" aria-hidden="true"></i>Pending Approvals</div>
+            <div class="stat-val">3</div>
+            <div class="stat-delta amber" style="color:var(--amber)">Needs attention</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label"><i class="ti ti-currency-rupee" aria-hidden="true"></i>Spend This Month</div>
+            <div class="stat-val">₹8.4L</div>
+            <div class="stat-delta down">↑ 12% vs last month</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label"><i class="ti ti-building" aria-hidden="true"></i>Active Vendors</div>
+            <div class="stat-val">24</div>
+            <div class="stat-delta up">↑ 2 new</div>
+          </div>
+        </div>
+        <div class="dash-grid">
+          <div class="card">
+            <div class="card-title"><i class="ti ti-chart-bar" aria-hidden="true"></i>Spend Trend — Last 6 Months</div>
+            <div style="position:relative;height:180px">
+              <canvas id="spendChart" role="img" aria-label="Bar chart showing monthly spend trend over last 6 months">Monthly spend: Jan ₹4.2L, Feb ₹5.8L, Mar ₹3.9L, Apr ₹7.2L, May ₹6.1L, Jun ₹8.4L</canvas>
+            </div>
+          </div>
+          <div>
+            <div class="card" style="margin-bottom:12px">
+              <div class="card-title"><i class="ti ti-bolt" aria-hidden="true"></i>Quick Actions</div>
+              <div class="quick-actions">
+                <button class="qa-btn" onclick="nav('rfqs')"><i class="ti ti-plus" aria-hidden="true"></i>New RFQ</button>
+                <button class="qa-btn" onclick="nav('vendors')"><i class="ti ti-building-plus" aria-hidden="true"></i>Add Vendor</button>
+                <button class="qa-btn" onclick="nav('reports')"><i class="ti ti-chart-line" aria-hidden="true"></i>View Reports</button>
+                <button class="qa-btn" onclick="nav('approvals')"><i class="ti ti-circle-check" aria-hidden="true"></i>Pending Approvals</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card" style="margin-top:16px">
+          <div class="card-title"><i class="ti ti-list-details" aria-hidden="true"></i>Recent Activity</div>
+          <div class="activity-item"><div class="a-dot green"></div><div><div class="a-text">PO-2024-0042 confirmed for TechCore Ltd — ₹1,24,000</div><div class="a-time">2 min ago · Arjun Kumar</div></div></div>
+          <div class="activity-item"><div class="a-dot amber"></div><div><div class="a-text">Quotation submitted by Infra Supplies for RFQ #12</div><div class="a-time">18 min ago · Ravi Vendor</div></div></div>
+          <div class="activity-item"><div class="a-dot blue"></div><div><div class="a-text">RFQ #15 "Office Furniture" sent to 4 vendors</div><div class="a-time">1 hr ago · Arjun Kumar</div></div></div>
+          <div class="activity-item"><div class="a-dot green"></div><div><div class="a-text">Approval granted by Priya Sharma for RFQ #14</div><div class="a-time">3 hrs ago · Priya Manager</div></div></div>
+          <div class="activity-item"><div class="a-dot red"></div><div><div class="a-text">Quotation rejected — FurniCo price exceeded budget</div><div class="a-time">Yesterday · Arjun Kumar</div></div></div>
+        </div>
+      </div>
+
+      <!-- VENDORS -->
+      <div class="screen" id="screen-vendors">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Vendor Management</div>
+            <div class="page-subtitle">24 active vendors registered</div>
+          </div>
+          <button class="btn btn-primary" onclick="openModal('addVendorModal')"><i class="ti ti-plus" aria-hidden="true"></i>Add Vendor</button>
+        </div>
+        <div class="toolbar">
+          <div class="search-input"><i class="ti ti-search" aria-hidden="true"></i>Search vendors…</div>
+          <select class="filter-select"><option>All Categories</option><option>IT & Software</option><option>Office Supplies</option><option>Infrastructure</option><option>Furniture</option></select>
+          <select class="filter-select"><option>All Status</option><option>Active</option><option>Inactive</option></select>
+        </div>
+        <div class="card">
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Vendor</th><th>Category</th><th>GST No.</th><th>Contact</th><th>Country</th><th>Status</th><th>Actions</th></tr></thead>
+              <tbody>
+                <tr><td><strong>TechCore Ltd</strong><br><span style="font-size:10px;color:var(--gray-400)">techcore@example.com</span></td><td>IT & Software</td><td>27AABCT1234P1Z5</td><td>+91 98200 11234</td><td>India</td><td><span class="badge badge-green">Active</span></td><td><button class="act-btn"><i class="ti ti-eye" aria-hidden="true"></i></button> <button class="act-btn"><i class="ti ti-edit" aria-hidden="true"></i></button></td></tr>
+                <tr><td><strong>Infra Supplies</strong><br><span style="font-size:10px;color:var(--gray-400)">infra@example.com</span></td><td>Infrastructure</td><td>29AACTS9876Q2A1</td><td>+91 98760 43210</td><td>India</td><td><span class="badge badge-green">Active</span></td><td><button class="act-btn"><i class="ti ti-eye" aria-hidden="true"></i></button> <button class="act-btn"><i class="ti ti-edit" aria-hidden="true"></i></button></td></tr>
+                <tr><td><strong>FurniCo</strong><br><span style="font-size:10px;color:var(--gray-400)">furnico@example.com</span></td><td>Furniture</td><td>06AAFCF3456R3Z9</td><td>+91 97531 86420</td><td>India</td><td><span class="badge badge-green">Active</span></td><td><button class="act-btn"><i class="ti ti-eye" aria-hidden="true"></i></button> <button class="act-btn"><i class="ti ti-edit" aria-hidden="true"></i></button></td></tr>
+                <tr><td><strong>StatioMart</strong><br><span style="font-size:10px;color:var(--gray-400)">statio@example.com</span></td><td>Office Supplies</td><td>24AAACS7654S4B2</td><td>+91 96320 75310</td><td>India</td><td><span class="badge badge-amber">Inactive</span></td><td><button class="act-btn"><i class="ti ti-eye" aria-hidden="true"></i></button> <button class="act-btn"><i class="ti ti-edit" aria-hidden="true"></i></button></td></tr>
+                <tr><td><strong>FormsLog</strong><br><span style="font-size:10px;color:var(--gray-400)">forms@example.com</span></td><td>IT & Software</td><td>19AABCF4567T5C3</td><td>+91 95100 64200</td><td>India</td><td><span class="badge badge-green">Active</span></td><td><button class="act-btn"><i class="ti ti-eye" aria-hidden="true"></i></button> <button class="act-btn"><i class="ti ti-edit" aria-hidden="true"></i></button></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- RFQs -->
+      <div class="screen" id="screen-rfqs">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Request for Quotations</div>
+            <div class="page-subtitle">12 active RFQs in progress</div>
+          </div>
+          <button class="btn btn-primary" onclick="nav('rfq-create')"><i class="ti ti-plus" aria-hidden="true"></i>New RFQ</button>
+        </div>
+        <div class="toolbar">
+          <div class="search-input"><i class="ti ti-search" aria-hidden="true"></i>Search RFQs…</div>
+          <select class="filter-select"><option>All Status</option><option>Draft</option><option>Sent</option><option>Closed</option></select>
+        </div>
+        <div class="card">
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>RFQ #</th><th>Title</th><th>Category</th><th>Deadline</th><th>Vendors</th><th>Status</th><th>Actions</th></tr></thead>
+              <tbody>
+                <tr><td style="font-family:'IBM Plex Mono',monospace">#RFQ-15</td><td><strong>Office Furniture Q4</strong><br><span style="font-size:10px;color:var(--gray-400)">Chairs, desks, storage units</span></td><td>Furniture</td><td>30 Jun 2024</td><td>4</td><td><span class="badge badge-blue">Sent</span></td><td><button class="act-btn" onclick="nav('compare')"><i class="ti ti-arrows-right-left" aria-hidden="true"></i>Compare</button></td></tr>
+                <tr><td style="font-family:'IBM Plex Mono',monospace">#RFQ-14</td><td><strong>Network Equipment</strong><br><span style="font-size:10px;color:var(--gray-400)">Switches, routers, cabling</span></td><td>IT & Software</td><td>25 Jun 2024</td><td>3</td><td><span class="badge badge-green">Approved</span></td><td><button class="act-btn"><i class="ti ti-eye" aria-hidden="true"></i>View</button></td></tr>
+                <tr><td style="font-family:'IBM Plex Mono',monospace">#RFQ-13</td><td><strong>Server Rack & UPS</strong><br><span style="font-size:10px;color:var(--gray-400)">Data center expansion</span></td><td>Infrastructure</td><td>20 Jun 2024</td><td>2</td><td><span class="badge badge-amber">Pending</span></td><td><button class="act-btn"><i class="ti ti-eye" aria-hidden="true"></i>View</button></td></tr>
+                <tr><td style="font-family:'IBM Plex Mono',monospace">#RFQ-12</td><td><strong>Stationery Supplies</strong><br><span style="font-size:10px;color:var(--gray-400)">Pens, paper, folders</span></td><td>Office Supplies</td><td>18 Jun 2024</td><td>3</td><td><span class="badge badge-blue">Sent</span></td><td><button class="act-btn"><i class="ti ti-arrows-right-left" aria-hidden="true"></i>Compare</button></td></tr>
+                <tr><td style="font-family:'IBM Plex Mono',monospace">#RFQ-11</td><td><strong>Software Licenses</strong><br><span style="font-size:10px;color:var(--gray-400)">Annual renewal — 50 seats</span></td><td>IT & Software</td><td>15 Jun 2024</td><td>2</td><td><span class="badge badge-gray">Draft</span></td><td><button class="act-btn"><i class="ti ti-edit" aria-hidden="true"></i>Edit</button></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- RFQ CREATE -->
+      <div class="screen" id="screen-rfq-create">
+        <div class="page-header">
+          <div><div class="page-title">Create New RFQ</div><div class="page-subtitle">3-step process</div></div>
+          <button class="btn btn-secondary" onclick="nav('rfqs')"><i class="ti ti-arrow-left" aria-hidden="true"></i>Back</button>
+        </div>
+        <div class="steps">
+          <div class="step active"><div class="step-num">1</div><div class="step-label">Basic Info</div></div>
+          <div class="step-line"></div>
+          <div class="step todo"><div class="step-num">2</div><div class="step-label">Line Items</div></div>
+          <div class="step-line"></div>
+          <div class="step todo"><div class="step-num">3</div><div class="step-label">Assign Vendors</div></div>
+        </div>
+        <div class="card">
+          <div class="form-grid">
+            <div class="form-row" style="grid-column:1/-1">
+              <label class="form-label">RFQ Title</label>
+              <input class="form-input" value="Office Furniture Q4 2024" />
+            </div>
+            <div class="form-row">
+              <label class="form-label">Category</label>
+              <select class="form-input"><option>Furniture</option><option>IT & Software</option><option>Infrastructure</option></select>
+            </div>
+            <div class="form-row">
+              <label class="form-label">Deadline</label>
+              <input class="form-input" type="date" value="2024-06-30" />
+            </div>
+            <div class="form-row" style="grid-column:1/-1">
+              <label class="form-label">Description</label>
+              <textarea class="form-input" style="height:72px;resize:none">Procurement of ergonomic chairs, L-shaped desks, and storage units for the new Goa office wing (approx. 40 seats).</textarea>
+            </div>
+          </div>
+          <div style="margin-top:8px;padding-top:16px;border-top:1px solid var(--gray-100)">
+            <div class="card-title"><i class="ti ti-list" aria-hidden="true"></i>Line Items</div>
+            <table style="margin-bottom:10px">
+              <thead><tr><th>Product / Service</th><th>Qty</th><th>Unit</th><th>Est. Price (₹)</th><th></th></tr></thead>
+              <tbody>
+                <tr><td><input class="form-input" value="Ergonomic Chair" style="width:160px" /></td><td><input class="form-input" value="40" style="width:60px" /></td><td><select class="form-input" style="width:80px"><option>Nos</option><option>Set</option></select></td><td><input class="form-input" value="8500" style="width:100px" /></td><td><button class="act-btn red"><i class="ti ti-trash" aria-hidden="true"></i></button></td></tr>
+                <tr><td><input class="form-input" value="L-Shaped Desk" style="width:160px" /></td><td><input class="form-input" value="20" style="width:60px" /></td><td><select class="form-input" style="width:80px"><option>Nos</option></select></td><td><input class="form-input" value="15000" style="width:100px" /></td><td><button class="act-btn red"><i class="ti ti-trash" aria-hidden="true"></i></button></td></tr>
+              </tbody>
+            </table>
+            <button class="btn btn-secondary" style="font-size:11px"><i class="ti ti-plus" aria-hidden="true"></i>Add Item</button>
+          </div>
+          <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--gray-100);display:flex;gap:10px;justify-content:flex-end">
+            <button class="btn btn-secondary">Save Draft</button>
+            <button class="btn btn-primary" onclick="nav('rfqs')"><i class="ti ti-send" aria-hidden="true"></i>Send to Vendors</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- QUOTATIONS (Vendor View) -->
+      <div class="screen" id="screen-quotations">
+        <div class="page-header">
+          <div><div class="page-title">My Quotations</div><div class="page-subtitle">Vendor: TechCore Ltd</div></div>
+        </div>
+        <div class="card" style="margin-bottom:12px">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
+            <div>
+              <div style="font-size:13px;font-weight:600">RFQ #15 — Office Furniture Q4</div>
+              <div style="font-size:11px;color:var(--gray-400);margin-top:2px">Deadline: 30 Jun 2024 · 4 items</div>
+            </div>
+            <span class="badge badge-blue">Open</span>
+          </div>
+          <table>
+            <thead><tr><th>Item</th><th>Qty</th><th>Your Price (₹)</th><th>Delivery Days</th></tr></thead>
+            <tbody>
+              <tr><td>Ergonomic Chair</td><td>40</td><td><input class="form-input" value="7800" style="width:100px" /></td><td><input class="form-input" value="14" style="width:80px" /></td></tr>
+              <tr><td>L-Shaped Desk</td><td>20</td><td><input class="form-input" value="13500" style="width:100px" /></td><td><input class="form-input" value="21" style="width:80px" /></td></tr>
+            </tbody>
+          </table>
+          <div class="form-row" style="margin-top:12px">
+            <label class="form-label">Notes / Terms</label>
+            <input class="form-input" value="Includes installation. 1-year warranty on all items." />
+          </div>
+          <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
+            <button class="btn btn-primary"><i class="ti ti-send" aria-hidden="true"></i>Submit Quotation</button>
+          </div>
+        </div>
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
+            <div>
+              <div style="font-size:13px;font-weight:600">RFQ #12 — Stationery Supplies</div>
+              <div style="font-size:11px;color:var(--gray-400);margin-top:2px">Deadline: 18 Jun 2024 · 6 items</div>
+            </div>
+            <span class="badge badge-green">Submitted</span>
+          </div>
+          <div style="font-size:12px;color:var(--gray-500)">Quotation submitted on 10 Jun 2024. Total: ₹42,300. Awaiting comparison.</div>
+        </div>
+      </div>
+
+      <!-- COMPARE -->
+      <div class="screen" id="screen-compare">
+        <div class="page-header">
+          <div><div class="page-title">Quotation Comparison</div><div class="page-subtitle">RFQ #15 — Office Furniture Q4</div></div>
+          <button class="btn btn-primary"><i class="ti ti-circle-check" aria-hidden="true"></i>Select & Approve Winner</button>
+        </div>
+        <div class="card">
+          <div class="tbl-wrap">
+            <table class="compare-table">
+              <thead>
+                <tr>
+                  <th>Item</th>
+                  <th style="text-align:center">FurniCo<br><span style="font-weight:400;color:var(--gray-400)">14 days</span></th>
+                  <th style="text-align:center;background:#f0fdf4">TechCore Ltd ★<br><span style="font-weight:400;color:var(--green)">Best value</span></th>
+                  <th style="text-align:center">Infra Supplies<br><span style="font-weight:400;color:var(--gray-400)">21 days</span></th>
+                  <th style="text-align:center">StatioMart<br><span style="font-weight:400;color:var(--gray-400)">10 days</span></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Ergonomic Chair</strong><br><span style="font-size:10px;color:var(--gray-400)">Qty: 40</span></td>
+                  <td style="text-align:center">₹8,200</td>
+                  <td style="text-align:center;background:#f0fdf4" class="best"><strong style="color:var(--green)">₹7,800 ✓</strong></td>
+                  <td style="text-align:center">₹8,600</td>
+                  <td style="text-align:center">₹9,100</td>
+                </tr>
+                <tr>
+                  <td><strong>L-Shaped Desk</strong><br><span style="font-size:10px;color:var(--gray-400)">Qty: 20</span></td>
+                  <td style="text-align:center">₹14,000</td>
+                  <td style="text-align:center;background:#f0fdf4" class="best"><strong style="color:var(--green)">₹13,500 ✓</strong></td>
+                  <td style="text-align:center">₹15,200</td>
+                  <td style="text-align:center">₹13,800</td>
+                </tr>
+                <tr style="background:var(--gray-50)">
+                  <td><strong>Total (incl. tax)</strong></td>
+                  <td style="text-align:center;font-weight:600">₹6,14,800</td>
+                  <td style="text-align:center;background:#f0fdf4;font-weight:700;color:var(--green)">₹5,82,360</td>
+                  <td style="text-align:center;font-weight:600">₹6,58,400</td>
+                  <td style="text-align:center;font-weight:600">₹6,22,100</td>
+                </tr>
+                <tr>
+                  <td>Delivery</td>
+                  <td style="text-align:center">14 days</td>
+                  <td style="text-align:center;background:#f0fdf4"><strong>14 days</strong></td>
+                  <td style="text-align:center">21 days</td>
+                  <td style="text-align:center"><strong style="color:var(--green)">10 days ✓</strong></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- APPROVALS -->
+      <div class="screen" id="screen-approvals">
+        <div class="page-header">
+          <div><div class="page-title">Approval Workflow</div><div class="page-subtitle">3 items pending your review</div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:280px 1fr;gap:16px">
+          <div>
+            <div class="card" style="padding:8px;margin-bottom:8px;border-left:3px solid var(--amber)">
+              <div style="font-size:12px;font-weight:600;margin-bottom:4px">RFQ #15 — Office Furniture</div>
+              <div style="font-size:11px;color:var(--gray-400)">Vendor: TechCore Ltd · ₹5,82,360</div>
+              <div style="margin-top:6px"><span class="badge badge-amber">Pending Review</span></div>
+            </div>
+            <div class="card" style="padding:8px;margin-bottom:8px">
+              <div style="font-size:12px;font-weight:600;margin-bottom:4px">RFQ #13 — Server Rack</div>
+              <div style="font-size:11px;color:var(--gray-400)">Vendor: Infra Supplies · ₹2,45,000</div>
+              <div style="margin-top:6px"><span class="badge badge-amber">Pending Review</span></div>
+            </div>
+            <div class="card" style="padding:8px">
+              <div style="font-size:12px;font-weight:600;margin-bottom:4px">RFQ #12 — Stationery</div>
+              <div style="font-size:11px;color:var(--gray-400)">Vendor: StatioMart · ₹42,300</div>
+              <div style="margin-top:6px"><span class="badge badge-amber">Pending Review</span></div>
+            </div>
+          </div>
+          <div class="card">
+            <div style="font-size:14px;font-weight:600;margin-bottom:12px">RFQ #15 — Office Furniture Q4</div>
+            <div class="timeline">
+              <div class="tl-step"><div class="tl-dot done"><i class="ti ti-check" aria-hidden="true"></i></div><div class="tl-label">Submitted</div></div>
+              <div class="tl-line done"></div>
+              <div class="tl-step"><div class="tl-dot active">2</div><div class="tl-label">Under Review</div></div>
+              <div class="tl-line todo"></div>
+              <div class="tl-step"><div class="tl-dot todo">3</div><div class="tl-label">Decision</div></div>
+            </div>
+            <div style="background:var(--gray-50);border-radius:8px;padding:12px;margin-bottom:14px">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px">
+                <div><span style="color:var(--gray-400)">Vendor:</span> <strong>TechCore Ltd</strong></div>
+                <div><span style="color:var(--gray-400)">Total:</span> <strong>₹5,82,360</strong></div>
+                <div><span style="color:var(--gray-400)">Category:</span> Furniture</div>
+                <div><span style="color:var(--gray-400)">Delivery:</span> 14 days</div>
+                <div><span style="color:var(--gray-400)">Items:</span> 2 line items</div>
+                <div><span style="color:var(--gray-400)">Submitted:</span> 12 Jun 2024</div>
+              </div>
+            </div>
+            <div class="form-row">
+              <label class="form-label">Remarks (required for rejection)</label>
+              <textarea class="form-input" style="height:60px;resize:none" placeholder="Enter approval remarks…"></textarea>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:8px">
+              <button class="btn btn-primary" style="flex:1;justify-content:center" onclick="nav('pos')"><i class="ti ti-check" aria-hidden="true"></i>Approve & Generate PO</button>
+              <button class="btn btn-danger" style="flex:1;justify-content:center"><i class="ti ti-x" aria-hidden="true"></i>Reject</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PURCHASE ORDERS -->
+      <div class="screen" id="screen-pos">
+        <div class="page-header">
+          <div><div class="page-title">Purchase Orders</div><div class="page-subtitle">Auto-generated from approved quotations</div></div>
+        </div>
+        <div class="card" style="margin-bottom:16px">
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>PO Number</th><th>Vendor</th><th>RFQ Ref</th><th>Amount</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
+              <tbody>
+                <tr><td style="font-family:'IBM Plex Mono',monospace;font-weight:600">PO-2024-0042</td><td>TechCore Ltd</td><td>#RFQ-14</td><td style="font-weight:600">₹1,24,000</td><td><span class="badge badge-green">Confirmed</span></td><td>10 Jun 2024</td><td><button class="act-btn" onclick="nav('invoice-detail')"><i class="ti ti-file-invoice" aria-hidden="true"></i>Invoice</button> <button class="act-btn"><i class="ti ti-download" aria-hidden="true"></i></button></td></tr>
+                <tr><td style="font-family:'IBM Plex Mono',monospace;font-weight:600">PO-2024-0041</td><td>Infra Supplies</td><td>#RFQ-13</td><td style="font-weight:600">₹2,45,000</td><td><span class="badge badge-amber">Pending</span></td><td>8 Jun 2024</td><td><button class="act-btn"><i class="ti ti-eye" aria-hidden="true"></i></button></td></tr>
+                <tr><td style="font-family:'IBM Plex Mono',monospace;font-weight:600">PO-2024-0040</td><td>StatioMart</td><td>#RFQ-10</td><td style="font-weight:600">₹18,600</td><td><span class="badge badge-blue">Paid</span></td><td>5 Jun 2024</td><td><button class="act-btn"><i class="ti ti-download" aria-hidden="true"></i></button></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- INVOICES -->
+      <div class="screen" id="screen-invoices">
+        <div class="page-header">
+          <div><div class="page-title">Invoices</div><div class="page-subtitle">Generated from Purchase Orders</div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 320px;gap:16px">
+          <div>
+            <div class="card" style="margin-bottom:12px">
+              <div class="tbl-wrap">
+                <table>
+                  <thead><tr><th>Invoice #</th><th>PO Ref</th><th>Vendor</th><th>Amount</th><th>Status</th><th>Actions</th></tr></thead>
+                  <tbody>
+                    <tr><td style="font-family:'IBM Plex Mono',monospace;font-weight:600">INV-2024-0038</td><td>PO-2024-0040</td><td>StatioMart</td><td>₹18,600</td><td><span class="badge badge-blue">Paid</span></td><td><button class="act-btn" onclick="nav('invoice-detail')"><i class="ti ti-eye" aria-hidden="true"></i></button> <button class="act-btn"><i class="ti ti-download" aria-hidden="true"></i>PDF</button></td></tr>
+                    <tr><td style="font-family:'IBM Plex Mono',monospace;font-weight:600">INV-2024-0037</td><td>PO-2024-0039</td><td>FurniCo</td><td>₹3,24,000</td><td><span class="badge badge-amber">Pending</span></td><td><button class="act-btn"><i class="ti ti-eye" aria-hidden="true"></i></button> <button class="act-btn"><i class="ti ti-mail" aria-hidden="true"></i>Email</button></td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="card">
+              <div class="card-title"><i class="ti ti-file-invoice" aria-hidden="true"></i>Invoice Actions</div>
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <button class="btn btn-primary" onclick="nav('invoice-detail')" style="justify-content:center"><i class="ti ti-eye" aria-hidden="true"></i>View Invoice PDF</button>
+                <button class="btn btn-secondary" style="justify-content:center"><i class="ti ti-download" aria-hidden="true"></i>Download PDF</button>
+                <button class="btn btn-secondary" style="justify-content:center"><i class="ti ti-printer" aria-hidden="true"></i>Print</button>
+                <button class="btn btn-secondary" style="justify-content:center"><i class="ti ti-mail" aria-hidden="true"></i>Send via Email</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- INVOICE DETAIL -->
+      <div class="screen" id="screen-invoice-detail">
+        <div class="page-header">
+          <div><div class="page-title">Invoice — INV-2024-0038</div></div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-secondary" onclick="nav('invoices')"><i class="ti ti-arrow-left" aria-hidden="true"></i>Back</button>
+            <button class="btn btn-secondary"><i class="ti ti-download" aria-hidden="true"></i>PDF</button>
+            <button class="btn btn-secondary"><i class="ti ti-mail" aria-hidden="true"></i>Email</button>
+            <button class="btn btn-primary"><i class="ti ti-printer" aria-hidden="true"></i>Print</button>
+          </div>
+        </div>
+        <div class="po-doc">
+          <div class="po-header">
+            <div>
+              <div class="po-brand">Vendor<span>Bridge</span></div>
+              <div style="font-size:11px;color:var(--gray-500);margin-top:4px">Your Company Pvt. Ltd.<br>123 Business Park, Goa — 403001<br>GST: 30AABCY1234P1Z5</div>
+            </div>
+            <div class="po-meta">
+              <div style="font-size:20px;font-weight:700;color:var(--gray-800);margin-bottom:4px">INVOICE</div>
+              <div><strong>INV-2024-0038</strong></div>
+              <div style="margin-top:4px">Date: 5 Jun 2024</div>
+              <div>Due: 5 Jul 2024</div>
+              <div style="margin-top:6px"><span class="badge badge-blue">Paid</span></div>
+            </div>
+          </div>
+          <div class="po-parties">
+            <div>
+              <div class="po-party-label">Billed To</div>
+              <div class="po-party-name">StatioMart</div>
+              <div class="po-party-info">statio@example.com<br>+91 96320 75310<br>GST: 24AAACS7654S4B2</div>
+            </div>
+            <div>
+              <div class="po-party-label">PO Reference</div>
+              <div class="po-party-name">PO-2024-0040</div>
+              <div class="po-party-info">RFQ #10 — Office Supplies<br>Approved: 4 Jun 2024</div>
+            </div>
+          </div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>#</th><th>Description</th><th>Qty</th><th>Unit</th><th>Rate (₹)</th><th>Amount (₹)</th></tr></thead>
+              <tbody>
+                <tr><td>1</td><td>A4 Copy Paper (500 sheets)</td><td>20</td><td>Ream</td><td>420</td><td>8,400</td></tr>
+                <tr><td>2</td><td>Ballpoint Pens (Blue)</td><td>10</td><td>Box</td><td>180</td><td>1,800</td></tr>
+                <tr><td>3</td><td>Document Folders</td><td>50</td><td>Nos</td><td>65</td><td>3,250</td></tr>
+                <tr><td>4</td><td>Whiteboard Markers</td><td>5</td><td>Pack</td><td>340</td><td>1,700</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="po-totals">
+            <div class="po-total-row"><span>Subtotal</span><span>₹15,150</span></div>
+            <div class="po-total-row"><span>GST @ 18%</span><span>₹2,727</span></div>
+            <div class="po-total-row"><span>Discount</span><span style="color:var(--green)">-₹277</span></div>
+            <div class="po-total-row grand"><span>Grand Total</span><span>₹17,600</span></div>
+          </div>
+          <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--gray-200);font-size:11px;color:var(--gray-400)">
+            Payment Terms: Net 30 days · Bank: HDFC Bank · A/C: 50100123456789 · IFSC: HDFC0001234
+          </div>
+        </div>
+      </div>
+
+      <!-- ACTIVITY LOGS -->
+      <div class="screen" id="screen-logs">
+        <div class="page-header">
+          <div><div class="page-title">Activity Logs</div><div class="page-subtitle">Complete audit trail</div></div>
+        </div>
+        <div class="toolbar">
+          <select class="filter-select" style="max-width:200px"><option>All Activity</option><option>RFQs</option><option>Approvals</option><option>Invoices</option><option>Vendors</option></select>
+        </div>
+        <div class="card">
+          <div style="display:flex;flex-direction:column;gap:0">
+            <div class="activity-item"><div class="a-dot green"></div><div style="flex:1"><div class="a-text"><strong>Arjun Kumar</strong> confirmed PO-2024-0042 for TechCore Ltd</div><div class="a-time">10 Jun 2024, 3:42 PM · Purchase Orders</div></div><span class="badge badge-green">PO</span></div>
+            <div class="activity-item"><div class="a-dot blue"></div><div style="flex:1"><div class="a-text"><strong>Priya Manager</strong> approved quotation for RFQ #14 — Network Equipment</div><div class="a-time">10 Jun 2024, 2:15 PM · Approvals</div></div><span class="badge badge-blue">Approval</span></div>
+            <div class="activity-item"><div class="a-dot amber"></div><div style="flex:1"><div class="a-text"><strong>Ravi Vendor</strong> (Infra Supplies) submitted quotation for RFQ #13</div><div class="a-time">10 Jun 2024, 11:30 AM · Quotations</div></div><span class="badge badge-amber">Quote</span></div>
+            <div class="activity-item"><div class="a-dot blue"></div><div style="flex:1"><div class="a-text"><strong>Arjun Kumar</strong> created and sent RFQ #15 — Office Furniture to 4 vendors</div><div class="a-time">10 Jun 2024, 10:00 AM · RFQs</div></div><span class="badge badge-blue">RFQ</span></div>
+            <div class="activity-item"><div class="a-dot green"></div><div style="flex:1"><div class="a-text"><strong>Sneha Admin</strong> registered new vendor: FormsLog</div><div class="a-time">9 Jun 2024, 4:00 PM · Vendors</div></div><span class="badge badge-green">Vendor</span></div>
+            <div class="activity-item"><div class="a-dot red"></div><div style="flex:1"><div class="a-text"><strong>Priya Manager</strong> rejected quotation from FurniCo — "Price exceeds budget by 18%"</div><div class="a-time">9 Jun 2024, 2:30 PM · Approvals</div></div><span class="badge badge-red">Rejected</span></div>
+            <div class="activity-item"><div class="a-dot blue"></div><div style="flex:1"><div class="a-text"><strong>Arjun Kumar</strong> generated Invoice INV-2024-0038 from PO-2024-0040</div><div class="a-time">5 Jun 2024, 3:00 PM · Invoices</div></div><span class="badge badge-blue">Invoice</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- REPORTS -->
+      <div class="screen" id="screen-reports">
+        <div class="page-header">
+          <div><div class="page-title">Reports & Analytics</div><div class="page-subtitle">June 2024</div></div>
+          <div style="display:flex;gap:8px">
+            <select class="filter-select"><option>June 2024</option><option>May 2024</option><option>Q2 2024</option></select>
+            <button class="btn btn-secondary"><i class="ti ti-download" aria-hidden="true"></i>Export CSV</button>
+          </div>
+        </div>
+        <div class="kpi-grid">
+          <div class="kpi"><div class="kpi-label">Total Spend</div><div class="kpi-val">₹8.4L</div><div class="kpi-sub">↑ 12% vs May</div></div>
+          <div class="kpi"><div class="kpi-label">Active Vendors</div><div class="kpi-val">24</div><div class="kpi-sub">↑ 2 new</div></div>
+          <div class="kpi"><div class="kpi-label">POs Fulfilled</div><div class="kpi-val">87%</div><div class="kpi-sub">↑ 5% vs May</div></div>
+          <div class="kpi"><div class="kpi-label">Pending Invoices</div><div class="kpi-val">4</div><div class="kpi-sub" style="color:var(--amber)">Needs action</div></div>
+        </div>
+        <div class="reports-grid">
+          <div class="card">
+            <div class="card-title"><i class="ti ti-chart-bar" aria-hidden="true"></i>Spend by Category</div>
+            <div style="position:relative;height:200px">
+              <canvas id="catChart" role="img" aria-label="Bar chart showing spend by procurement category">Spend: IT ₹3.2L, Infra ₹2.8L, Furniture ₹1.6L, Supplies ₹0.8L</canvas>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title"><i class="ti ti-chart-line" aria-hidden="true"></i>Monthly Procurement Trend</div>
+            <div style="position:relative;height:200px">
+              <canvas id="trendChart" role="img" aria-label="Line chart showing monthly procurement spend trend">Jan ₹4.2L through Jun ₹8.4L showing upward trend</canvas>
+            </div>
+          </div>
+        </div>
+        <div class="card" style="margin-top:16px">
+          <div class="card-title"><i class="ti ti-trophy" aria-hidden="true"></i>Top Vendors by Spend</div>
+          <table>
+            <thead><tr><th>Rank</th><th>Vendor</th><th>Category</th><th>Spend</th><th>PO Count</th><th>Share</th></tr></thead>
+            <tbody>
+              <tr><td>1</td><td><strong>TechCore Ltd</strong></td><td>IT & Software</td><td style="font-weight:600">₹3,24,000</td><td>8</td><td><div style="width:80%;background:var(--green-light);border-radius:4px;height:6px;overflow:hidden"><div style="width:80%;height:100%;background:var(--green)"></div></div></td></tr>
+              <tr><td>2</td><td><strong>Infra Supplies</strong></td><td>Infrastructure</td><td style="font-weight:600">₹2,45,000</td><td>5</td><td><div style="width:80%;background:var(--green-light);border-radius:4px;height:6px;overflow:hidden"><div style="width:60%;height:100%;background:var(--green)"></div></div></td></tr>
+              <tr><td>3</td><td><strong>FurniCo</strong></td><td>Furniture</td><td style="font-weight:600">₹1,02,000</td><td>3</td><td><div style="width:80%;background:var(--green-light);border-radius:4px;height:6px;overflow:hidden"><div style="width:25%;height:100%;background:var(--green)"></div></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Add Vendor -->
+<div class="modal-bg" id="addVendorModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Add New Vendor</h3>
+      <span class="modal-close" onclick="closeModal('addVendorModal')" aria-label="Close"><i class="ti ti-x"></i></span>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-row"><label class="form-label">Company Name</label><input class="form-input" placeholder="e.g. Acme Corp" /></div>
+        <div class="form-row"><label class="form-label">Category</label><select class="form-input"><option>IT & Software</option><option>Infrastructure</option><option>Furniture</option><option>Office Supplies</option></select></div>
+        <div class="form-row"><label class="form-label">Email</label><input class="form-input" type="email" placeholder="vendor@example.com" /></div>
+        <div class="form-row"><label class="form-label">Phone</label><input class="form-input" placeholder="+91 98XXX XXXXX" /></div>
+        <div class="form-row"><label class="form-label">GST Number</label><input class="form-input" placeholder="27AABCT1234P1Z5" /></div>
+        <div class="form-row"><label class="form-label">Country</label><select class="form-input"><option>India</option><option>UAE</option><option>Singapore</option></select></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-secondary" onclick="closeModal('addVendorModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="closeModal('addVendorModal')"><i class="ti ti-check" aria-hidden="true"></i>Save Vendor</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const screens = {
+  'dashboard':'screen-dashboard','vendors':'screen-vendors','rfqs':'screen-rfqs',
+  'rfq-create':'screen-rfq-create','quotations':'screen-quotations','compare':'screen-compare',
+  'approvals':'screen-approvals','pos':'screen-pos','invoices':'screen-invoices',
+  'invoice-detail':'screen-invoice-detail','logs':'screen-logs','reports':'screen-reports',
+  'login':'screen-login'
+};
+const titles = {
+  'dashboard':'Dashboard','vendors':'Vendor Management','rfqs':'RFQs',
+  'rfq-create':'New RFQ','quotations':'Quotations','compare':'Quotation Comparison',
+  'approvals':'Approval Workflow','pos':'Purchase Orders','invoices':'Invoices',
+  'invoice-detail':'Invoice Detail','logs':'Activity Logs','reports':'Reports & Analytics',
+  'login':'Login'
+};
+const sidebarMap = {
+  'dashboard':0,'vendors':1,'rfqs':2,'quotations':3,'compare':4,
+  'approvals':5,'pos':6,'invoices':7,'reports':8,'logs':9,'login':10
+};
+
+function nav(page){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  const t = screens[page];
+  if(t) document.getElementById(t).classList.add('active');
+  document.getElementById('topbar-title').textContent = titles[page]||page;
+  document.querySelectorAll('.sb-item').forEach((el,i)=>{
+    el.classList.toggle('active', i === sidebarMap[page]);
+  });
+  if(page==='reports') setTimeout(initCharts,100);
+  if(page==='dashboard') setTimeout(initDashChart,100);
+}
+
+function openModal(id){document.getElementById(id).classList.add('open')}
+function closeModal(id){document.getElementById(id).classList.remove('open')}
+
+let dashChartInited=false, reportsChartsInited=false;
+
+function initDashChart(){
+  if(dashChartInited) return; dashChartInited=true;
+  new Chart(document.getElementById('spendChart'),{
+    type:'bar',
+    data:{labels:['Jan','Feb','Mar','Apr','May','Jun'],datasets:[{
+      label:'Spend (₹L)',data:[4.2,5.8,3.9,7.2,6.1,8.4],
+      backgroundColor:'#bbf7d0',borderColor:'#16a34a',borderWidth:1.5,borderRadius:4
+    }]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{ticks:{font:{size:11}}},y:{ticks:{font:{size:11},callback:v=>'₹'+v+'L'}}}}
+  });
+}
+
+function initCharts(){
+  if(reportsChartsInited) return; reportsChartsInited=true;
+  new Chart(document.getElementById('catChart'),{
+    type:'bar',
+    data:{labels:['IT & Software','Infrastructure','Furniture','Supplies'],
+      datasets:[{label:'Spend',data:[320000,280000,160000,80000],
+        backgroundColor:['#bbf7d0','#bfdbfe','#fde68a','#fecaca'],
+        borderColor:['#16a34a','#2563eb','#d97706','#dc2626'],borderWidth:1.5,borderRadius:4}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{ticks:{font:{size:10}}},y:{ticks:{font:{size:10},callback:v=>'₹'+(v/1000)+'K'}}}}
+  });
+  new Chart(document.getElementById('trendChart'),{
+    type:'line',
+    data:{labels:['Jan','Feb','Mar','Apr','May','Jun'],
+      datasets:[{label:'Spend',data:[420000,580000,390000,720000,610000,840000],
+        borderColor:'#16a34a',backgroundColor:'rgba(22,163,74,0.08)',fill:true,
+        tension:0.4,pointRadius:4,pointBackgroundColor:'#16a34a'}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{ticks:{font:{size:11}}},y:{ticks:{font:{size:11},callback:v=>'₹'+(v/1000)+'K'}}}}
+  });
+}
+
+function selectRole(role, initials, name){
+  document.querySelectorAll('.role-opt').forEach(el=>el.classList.remove('selected'));
+  event.target.classList.add('selected');
+  document.getElementById('role-pill').textContent = role;
+  document.getElementById('user-avatar').textContent = initials;
+  document.getElementById('user-name').textContent = name;
+  document.getElementById('user-role').textContent = role;
+  document.getElementById('dash-welcome').textContent = 'Welcome back, '+name.split(' ')[0]+' 👋';
+}
+
+initDashChart();
+</script>
