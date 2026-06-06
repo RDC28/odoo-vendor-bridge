@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../services/api';
+import { useAuth } from '../hooks/useAuth';
 
 const QuotationSubmit = () => {
   const { rfqId } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [rfq, setRfq] = useState(null);
   const [loading, setLoading] = useState(true);
   const [deliveryDays, setDeliveryDays] = useState('');
@@ -20,12 +22,17 @@ const QuotationSubmit = () => {
           api.get(`/quotations?rfqId=${rfqId}`)
         ]);
         
-        const targetRfq = rfqRes.data.find(r => r._id === rfqId);
-        if (targetRfq) {
-          setRfq(targetRfq);
-          
-          const existingQuote = quoteRes.data[0];
-          if (existingQuote) {
+          const targetRfq = rfqRes.data.find(r => r._id === rfqId);
+          if (targetRfq) {
+            setRfq(targetRfq);
+            
+            // Only find a quote if it was submitted by the currently logged-in user
+            const existingQuote = quoteRes.data.find(q => 
+              (q.submittedBy && q.submittedBy._id === user._id) || 
+              q.submittedBy === user._id
+            );
+
+            if (existingQuote) {
             setExistingQuoteId(existingQuote._id);
             setDeliveryDays(existingQuote.deliveryDays);
             setNotes(existingQuote.notes || '');

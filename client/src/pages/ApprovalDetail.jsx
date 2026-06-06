@@ -29,7 +29,7 @@ const ApprovalDetail = () => {
 
   const handleAction = async (action) => {
     try {
-      await api.patch(`/approvals/${approvalId}`, { status: action, remarks });
+      await api.put(`/approvals/${approvalId}`, { status: action, remarks });
       alert(`Approval ${action.toLowerCase()} successfully!`);
       navigate('/approvals');
     } catch (err) {
