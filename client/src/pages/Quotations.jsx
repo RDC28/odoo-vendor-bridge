@@ -53,14 +53,14 @@ const Quotations = () => {
                 <th className="p-4 font-medium">Items</th>
                 <th className="p-4 font-medium">Total Amount</th>
                 <th className="p-4 font-medium">Status</th>
-                <th className="p-4 font-medium text-right">Actions</th>
+                {user.role !== 'Procurement Officer' && <th className="p-4 font-medium text-right">Actions</th>}
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-sm text-slate-700">
               {loading ? (
-                <tr><td colSpan="6" className="p-8 text-center text-slate-400">Loading...</td></tr>
+                <tr><td colSpan={user.role === 'Admin' || user.role === 'Manager' ? '6' : '5'} className="p-8 text-center text-slate-400">Loading...</td></tr>
               ) : quotations.length === 0 ? (
-                <tr><td colSpan="6" className="p-8 text-center text-slate-400">No quotations found.</td></tr>
+                <tr><td colSpan={user.role === 'Admin' || user.role === 'Manager' ? '6' : '5'} className="p-8 text-center text-slate-400">No quotations found.</td></tr>
               ) : (
                 quotations.map((q) => (
                   <tr key={q._id} className="hover:bg-slate-50 transition-colors">
@@ -78,17 +78,19 @@ const Quotations = () => {
                         {q.status}
                       </span>
                     </td>
-                    <td className="p-4 text-right">
-                      {user.role === 'Vendor' && q.status === 'Draft' ? (
-                        <Link to={`/rfqs/${q.rfq._id}/quote`} className="text-slate-600 hover:text-green-600 hover:bg-green-50 p-2 rounded-md transition-colors inline-flex" title="Edit Draft">
-                          <Edit className="h-4 w-4" />
-                        </Link>
-                      ) : (
-                        <button className="text-slate-600 hover:text-blue-600 hover:bg-blue-50 p-2 rounded-md transition-colors inline-flex" title="View Details">
-                          <Eye className="h-4 w-4" />
-                        </button>
-                      )}
-                    </td>
+                    {user.role !== 'Procurement Officer' && (
+                      <td className="p-4 text-right">
+                        {user.role === 'Vendor' && q.status === 'Draft' ? (
+                          <Link to={`/rfqs/${q.rfq._id}/quote`} className="text-slate-600 hover:text-green-600 hover:bg-green-50 p-2 rounded-md transition-colors inline-flex" title="Edit Draft">
+                            <Edit className="h-4 w-4" />
+                          </Link>
+                        ) : (
+                          <Link to={`/quotations/compare/${q.rfq._id}`} className="text-slate-600 hover:text-blue-600 hover:bg-blue-50 p-2 rounded-md transition-colors inline-flex" title="View Details">
+                            <Eye className="h-4 w-4" />
+                          </Link>
+                        )}
+                      </td>
+                    )}
                   </tr>
                 ))
               )}

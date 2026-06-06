@@ -8,7 +8,7 @@ exports.getApprovals = async (req, res) => {
     const query = {};
     if (req.query.status) query.status = req.query.status;
     const approvals = await Approval.find(query)
-      .populate('rfq', 'title category')
+      .populate({ path: 'rfq', populate: { path: 'createdBy', select: 'name' } })
       .populate('quotation')
       .populate({ path: 'quotation', populate: { path: 'vendor', select: 'name email' } })
       .populate('requestedBy', 'name')
